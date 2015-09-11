@@ -1,8 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-
-
 public class PlayerController : MonoBehaviour
 {
     /*       
@@ -22,24 +20,19 @@ public class PlayerController : MonoBehaviour
     one	    Vector3(1, 1, 1).
     */
 
-
     private GameObject Snake;
-    //private bool alive = true;
     
     private Vector3 pos;
     private Vector3 moveVector = new Vector3(0, 0, 1);
-    private Quaternion orientMod = Quaternion.Euler(0, 0, 0);
-
-
-
-    enum direction
+    
+    private Quaternion[] rotYVectors = 
     {
-        up = 0,
-        left,
-        down,
-        right
+        Quaternion.Euler(0, 0, 0),
+        Quaternion.Euler(0, 90, 0),
+        Quaternion.Euler(0, 180, 0),
+        Quaternion.Euler(0, 270, 0)
     };
-    private direction orientDir;
+    private int rotYIndex = 0;
 
     void Start()
     {
@@ -47,13 +40,14 @@ public class PlayerController : MonoBehaviour
         Snake.transform.position = new Vector3(5,0,5);
         pos = Snake.transform.position;
 
+        rotYIndex = 0;
+
         StartCoroutine(SnakeControl());
     }
 
 	void Update()
     {
-        TrackInput();
-        
+        TrackInput();        
 	}
     
     IEnumerator SnakeControl()
@@ -61,7 +55,7 @@ public class PlayerController : MonoBehaviour
         while (((pos.x > 0) && (pos.x < 19)) && ((pos.z > 0) && (pos.z < 19)))
         {
             yield return new WaitForSeconds(0.5f);
-            //TrackInput();
+
             Crawl();
         }
     }
@@ -80,7 +74,6 @@ public class PlayerController : MonoBehaviour
 
         TrackKey("left", Vector3.left);
         TrackKey("a", Vector3.left);
-
         // save for later 3d
         /*
         TrackKey("up", Vector3.up);
@@ -97,36 +90,18 @@ public class PlayerController : MonoBehaviour
         
         if (Input.GetKeyDown(k))
         {
-            
-            
-
             if (pMod == Vector3.right)
             {
-                orientMod *= Quaternion.Euler(0, 90, 0);
-                //moveVector = new Vector3(1, 0, 0);
+                rotYIndex++;
+                if (rotYIndex > 3) rotYIndex = 0;
             }
             if (pMod == Vector3.left)
             {
-                orientMod *= Quaternion.Euler(0, -90, 0);
-                //moveVector = new Vector3(-1, 0, 0);
+                rotYIndex--;
+                if (rotYIndex < 0) rotYIndex = 3;                
             }
-
-            /*
-            if (pMod == Vector3.forward)
-            {
-                orientMod = Quaternion.Euler(0, 0, 0);
-                moveVector = new Vector3(0, 0, 1);
-            }
-            if (pMod == Vector3.back)
-            {
-                orientMod = Quaternion.Euler(0, 180, 0);
-                moveVector = new Vector3(0, 0, -1);
-            }
-            */
-
-            Snake.transform.rotation = orientMod;
-
-
+            Snake.transform.rotation = rotYVectors[rotYIndex];
+            
             Quaternion checkAngle = transform.rotation;
             if (checkAngle == Quaternion.Euler(0, 90, 0))
             {
@@ -144,7 +119,7 @@ public class PlayerController : MonoBehaviour
             {
                 moveVector = new Vector3(0, 0, -1);
             }
-                       
+            
             
             if (!KeyDown)
             {
