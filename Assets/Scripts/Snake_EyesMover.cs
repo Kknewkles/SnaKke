@@ -3,16 +3,18 @@ using System.Collections;
 
 public class Snake_EyesMover : MonoBehaviour
 {
-    private GameObject Snake;
+    private GameObject SnakeHead;
     private Vector3 offset;
 
     void Start()
     {
-        Snake = GameObject.FindWithTag("Snake");
+        // Switch to tracking List[0]
+        SnakeHead = GameObject.FindWithTag("SnakeHead");
     }
 
     void Update()
     {
-        transform.rotation = Snake.transform.rotation;
+        transform.rotation = SnakeHead.transform.rotation;
+        transform.position = SnakeHead.transform.position;
     }
 }

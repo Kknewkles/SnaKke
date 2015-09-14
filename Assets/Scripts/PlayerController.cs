@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class PlayerController : MonoBehaviour
 {
@@ -20,10 +21,19 @@ public class PlayerController : MonoBehaviour
     one	    Vector3(1, 1, 1).
     */
 
-    private GameObject Snake;
-    
-    private Vector3 pos;
+    private bool alive = true;
+    private GameObject SnakeHead;
+    public GameObject SnakeTail;
+
+    private FruitController Fruit;
+
     private Vector3 moveVector = new Vector3(0, 0, 1);
+
+    public float speed = 0.5f;
+
+    List<GameObject> Snake = new List<GameObject>();
+    // rotation and direction
+    // 0 - forward, 1 - right, 2 - back, 3 - left
     
     private Quaternion[] rotYVectors = 
     {
@@ -32,39 +42,105 @@ public class PlayerController : MonoBehaviour
         Quaternion.Euler(0, 180, 0),
         Quaternion.Euler(0, 270, 0)
     };
-    private int rotYIndex = 0;
+    private Vector3[] dirVectors = 
+    {
+        Vector3.forward,
+        Vector3.right,
+        Vector3.back,
+        Vector3.left
+    };
+    private int orientIndex = 0;
 
+    
     void Start()
     {
-        Snake = GameObject.FindWithTag("Snake");
-        Snake.transform.position = new Vector3(5,0,5);
-        pos = Snake.transform.position;
-
-        rotYIndex = 0;
+        // get fruit controller
+        GameObject fruitControllerObject = GameObject.FindWithTag("Fruit");
+        Fruit = fruitControllerObject.GetComponent<FruitController>();
+        
+        // track the head
+        SnakeHead = GameObject.FindWithTag("SnakeHead");
+        Snake.Add(SnakeHead);
+        
+        SnakeHead.transform.position = new Vector3(5,0,5);
+        //pos = SnakeHead.transform.position;
+        
+        orientIndex = 0;
 
         StartCoroutine(SnakeControl());
     }
 
-	void Update()
-    {
-        TrackInput();        
-	}
-    
     IEnumerator SnakeControl()
     {
-        while (((pos.x > 0) && (pos.x < 19)) && ((pos.z > 0) && (pos.z < 19)))
+        while(alive)
         {
-            yield return new WaitForSeconds(0.5f);
+            yield return new WaitForSeconds(speed);
 
-            Crawl();
+            //Crawl();
+            Creep();
         }
     }
 
+    /*
     void Crawl()
-    {
-        pos += moveVector;
+    {        
+        // --- SNAKE HEAD PROCESSING ---
+        headPos = SnakeHead.transform.position;
         
-        Snake.transform.position = pos;
+        // posMod = modified position
+        Vector3 posMod = headPos + moveVector;
+
+        //  Come to think of it, this entire thing is only for tests and will be deleted later.
+
+        // Replace hard limits with variables later
+        // if modified position satisfies a condition, assign it
+        if (((posMod.x >= 0) && (posMod.x <= 19)) &&
+            ((posMod.z >= 0) && (posMod.z <= 19)))
+        {
+            Snake[0].transform.position = posMod;
+        }
+
+        
+        // offset = difference between current and previous,
+        //  which will serve as position modifier on next move
+        Vector3 offset = moveVector;
+        Vector3 mv = offset;
+        // --- SNAKE TAIL PROCESSING ---
+        for(int i = 1; i < Snake.Count; i++)
+        {
+            //Snake[i].transform.position = Snake[i-1].transform.position - offset;
+            Snake[i].transform.position += mv;
+            offset = Snake[i-1].transform.position - Snake[i].transform.position;
+            mv = offset;
+        }
+    }
+    */
+
+    void Creep()
+    {
+        Vector3 vector, nextVector;
+        vector = moveVector;
+        
+        if(Snake.Count == 1)
+            Snake[0].transform.position += moveVector;
+
+        if (Snake.Count > 1)
+        {
+            for (int i = 0; i < Snake.Count - 1; i++)
+            {
+                nextVector = Snake[i].transform.position - Snake[i + 1].transform.position;
+                Snake[i].transform.position += vector;
+                vector = nextVector;
+            }
+        }
+        
+    }
+
+    void Update()
+    {
+        TrackInput();
+        int count = Snake.Count;
+        Debug.Log(count);
     }
 
     void TrackInput()
@@ -83,6 +159,9 @@ public class PlayerController : MonoBehaviour
         TrackKey("s", Vector3.down);
         */
     }
+    
+    //private float angleY = 0;
+    //private Vector3 rotation = new Vector3(0, 0, 0);
 
     void TrackKey(string k, Vector3 pMod)
     {
@@ -90,37 +169,31 @@ public class PlayerController : MonoBehaviour
         
         if (Input.GetKeyDown(k))
         {
-            if (pMod == Vector3.right)
+            //if (pMod == Vector3.right)
+            if(k == "right" || k == "d")
             {
-                rotYIndex++;
-                if (rotYIndex > 3) rotYIndex = 0;
+                orientIndex++;
+                if (orientIndex > 3) orientIndex = 0;
+                
+                // move to angles? Screw arrays? Or keep them in mind for 3d?
+                //angleY += 90;        
             }
-            if (pMod == Vector3.left)
+            if (k == "left" || k == "a")
+            //if (pMod == Vector3.left)
             {
-                rotYIndex--;
-                if (rotYIndex < 0) rotYIndex = 3;                
+                orientIndex--;
+                if (orientIndex < 0) orientIndex = 3;
+                
+                //angleY -= 90;
             }
-            Snake.transform.rotation = rotYVectors[rotYIndex];
-            
-            Quaternion checkAngle = transform.rotation;
-            if (checkAngle == Quaternion.Euler(0, 90, 0))
-            {
-                moveVector = new Vector3(1, 0, 0);
-            }
-            else if (checkAngle == Quaternion.Euler(0, 270, 0))
-            {
-                moveVector = new Vector3(-1, 0, 0);
-            }
-            else if (checkAngle == Quaternion.Euler(0, 0, 0))
-            {
-                moveVector = new Vector3(0, 0, 1);
-            }
-            else if (checkAngle == Quaternion.Euler(0, 180, 0))
-            {
-                moveVector = new Vector3(0, 0, -1);
-            }
-            
-            
+
+            // apply rotation... or direction?
+            SnakeHead.transform.rotation = rotYVectors[orientIndex];
+            moveVector = dirVectors[orientIndex];
+
+            //rotation = new Vector3(0, angleY, 0);
+            //SnakeHead.transform.rotation = rotation;
+
             if (!KeyDown)
             {
                 KeyDown = true;
@@ -131,4 +204,36 @@ public class PlayerController : MonoBehaviour
             if (KeyDown) KeyDown = false;
     }
     // ---
+
+    void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("Fruit"))
+        {
+            Fruit.OnEaten();
+            AddTail();
+        }
+        //if (other.CompareTag("Snake")) ;
+            // Destroy
+            // 
+        //if (other.CompareTag("Obstacle")) ;
+            // Destroy
+    }
+
+    public void AddTail()
+    {
+        // set up a tail segment
+        
+        Vector3 move = dirVectors[orientIndex];
+        //Vector3 coords = SnakeHead.transform.position - move;
+        
+        
+        Vector3 coord = Snake[0].transform.position;
+        Debug.Log(coord.x + "," + coord.y + "," + coord.z);
+
+        Vector3 coords = Snake[Snake.Count-1].transform.position - move;        
+
+        // if you take one of existing/from objectpool, how do you distinguish and refer between them?
+        SnakeTail = (GameObject)(Instantiate(SnakeTail, coords, Quaternion.identity));
+        Snake.Add(SnakeTail);
+    }
 }

@@ -1,0 +1,50 @@
+﻿using UnityEngine;
+using System.Collections;
+
+public class FruitController : MonoBehaviour
+{
+	// Spawn a fruit on game start, spawn another on fruit being eaten.
+    private GameObject fruit;
+    
+    private int fruitCount = 0;
+    // Snake should know how much fruits there are;
+    //  and generate enough snake tails.
+    public int maxFruits = 10;
+
+    void Start()
+    {
+        fruit = GameObject.FindWithTag("Fruit");
+        Show();
+	}
+	
+	void Show()
+    {
+        int rX, rZ;
+        // More hard-coded limits to remove
+        rX = Random.Range(0, 19);
+        rZ = Random.Range(0, 19);
+
+        // Check for snake coords before spawning the fruit;
+
+        // reroll of snake occupies (rX, rY, rZ)
+
+        // add a scale up animation for popping up?
+        fruit.transform.position = new Vector3(rX, 0, rZ);
+    }
+
+    void Hide()
+    {
+        // Add scale to zero when you switch to smooth motion, as an animation of being eaten.
+        fruit.transform.position = new Vector3(0, -2, 0);
+    }
+
+    public void OnEaten()
+    {
+        fruitCount++;
+        Hide();
+        if (fruitCount < maxFruits)
+            Show();
+        //else
+            //victory
+    }
+}
