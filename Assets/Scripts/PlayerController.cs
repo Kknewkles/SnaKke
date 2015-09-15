@@ -76,7 +76,6 @@ public class PlayerController : MonoBehaviour
         {
             yield return new WaitForSeconds(speed);
 
-            //Crawl();
             Creep();
         }
     }
@@ -118,22 +117,18 @@ public class PlayerController : MonoBehaviour
 
     void Creep()
     {
-        Vector3 vector, nextVector;
-        vector = moveVector;
-        
-        if(Snake.Count == 1)
-            Snake[0].transform.position += moveVector;
+        Vector3 coords, prevCoords;
 
-        if (Snake.Count > 1)
-        {
-            for (int i = 0; i < Snake.Count - 1; i++)
-            {
-                nextVector = Snake[i].transform.position - Snake[i + 1].transform.position;
-                Snake[i].transform.position += vector;
-                vector = nextVector;
-            }
-        }
+        prevCoords = Snake[0].transform.position;
+        Snake[0].transform.position += moveVector;
         
+        for (int i = 1; i < Snake.Count; i++)
+        {
+            coords = prevCoords;
+            prevCoords = Snake[i].transform.position;
+            Snake[i].transform.position = coords;
+        }
+
     }
 
     void Update()
