@@ -40,8 +40,11 @@ public class PlayerController : MonoBehaviour
 
     private int orientIndex = 0;
 
-    private bool KeyDown = false;
-    
+    private bool IsDown = false;
+    private bool WasDown = false;
+
+    private float Key;
+
     void Start()
     {
         // get fruit controller
@@ -58,6 +61,8 @@ public class PlayerController : MonoBehaviour
         orientIndex = 0;
 
         StartCoroutine(SnakeControl());
+
+        Key = 0;
     }
     
     
@@ -113,11 +118,10 @@ public class PlayerController : MonoBehaviour
     
     void CheckInput()
     {
-        float Key = 0;
+        if ((Input.GetAxis("Fire1") != 0) && (Key == 0))
+            Key = Input.GetAxis("Fire1");
 
-        Key = Input.GetAxis("Fire1");
-
-        if (Key != 0)
+        if((Key != 0) && (Input.GetAxis("Fire1") == 0))
         {
             float angleY = CorrectAngle(LeAngle.eulerAngles.y);
 
@@ -130,7 +134,9 @@ public class PlayerController : MonoBehaviour
             Debug.Log("LeAngle " + LeAngle.eulerAngles);
 
             SnakeHead.transform.rotation = LeAngle;
-        }
+
+            Key = 0;
+        }        
     }
 
     // ---
