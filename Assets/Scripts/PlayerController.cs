@@ -5,23 +5,6 @@ using System.Collections.Generic;
 
 public class PlayerController : MonoBehaviour
 {
-    /*       
-    x - left-right
-    right	Vector3(1, 0, 0).
-    left	Vector3(-1, 0, 0).
-    
-    y - up-down
-    up	    Vector3(0, 1, 0).
-    down	Vector3(0, -1, 0).
-
-    z - back-forward
-    forward	Vector3(0, 0, 1).
-    back	Vector3(0, 0, -1).
-
-    zero	Vector3(0, 0, 0).
-    one	    Vector3(1, 1, 1).
-    */
-
     private bool alive = true;
 
     private GameObject SnakeHead;
@@ -31,19 +14,18 @@ public class PlayerController : MonoBehaviour
     private FruitController Fruit;
 
     public float speed = 0.5f;
-    
+
+
+    // angle to construct and assign to the snake's head
     private Quaternion LeAngle = Quaternion.Euler(0, 0, 0);
     private int LeAngleX = 0;
     private int LeAngleY = 0;
     private int LeAngleZ = 0;
 
 
-    private int orientIndex = 0;
-
-    private bool IsDown = false;
-    private bool WasDown = false;
-
+    private float angleY;
     private float Key;
+
 
     void Start()
     {
@@ -58,11 +40,10 @@ public class PlayerController : MonoBehaviour
         SnakeHead.transform.position = new Vector3(5,0,5);
         SnakeHead.transform.rotation = LeAngle;
 
-        orientIndex = 0;
-
         StartCoroutine(SnakeControl());
 
         Key = 0;
+        angleY = 0;
     }
     
     
@@ -72,7 +53,6 @@ public class PlayerController : MonoBehaviour
         {
             yield return new WaitForSeconds(speed);
             
-            // assign the value here
             RotateHead();
             Creep();
         }
@@ -80,9 +60,8 @@ public class PlayerController : MonoBehaviour
     
     void RotateHead()
     {
-        /*Quaternion Angle;
-        Angle = Quaternion.Euler(LeAngleX, LeAngleY, LeAngleZ);
-        SnakeHead.transform.rotation = Angle;*/
+        Snake[0].transform.rotation = Quaternion.Euler(0, Snake[0].transform.rotation.eulerAngles.y + angleY, 0);
+        angleY = 0;
     }
 
     void Creep()
@@ -99,6 +78,8 @@ public class PlayerController : MonoBehaviour
             Snake[i].transform.position = coords;
         }
     }
+
+    
 
     void Update()
     {
@@ -123,20 +104,13 @@ public class PlayerController : MonoBehaviour
 
         if((Key != 0) && (Input.GetAxis("Fire1") == 0))
         {
-            float angleY = CorrectAngle(LeAngle.eulerAngles.y);
 
-            if (Key > 0)
-                angleY += 90;
-            if (Key < 0)
-                angleY -= 90;
-
-            LeAngle = Quaternion.Euler(0, angleY, 0);
-            Debug.Log("LeAngle " + LeAngle.eulerAngles);
-
-            SnakeHead.transform.rotation = LeAngle;
+            if (Key > 0) { angleY = 90; }
+            else if (Key < 0) { angleY = -90; }
+            else if (Key == 0) { angleY = 0; }
 
             Key = 0;
-        }        
+        }
     }
 
     // ---
