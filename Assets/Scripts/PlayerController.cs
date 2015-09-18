@@ -40,7 +40,7 @@ public class PlayerController : MonoBehaviour
 
     private float angleY;
     private float Key;
-
+    private bool blockInput = false;
 
     void Start()
     {
@@ -68,16 +68,18 @@ public class PlayerController : MonoBehaviour
     {
         while(alive)
         {
+            // delay between turns
             yield return new WaitForSeconds(speed);
-                        
-            //RotateHead();   // deliver angle change for
+
+            // assign rotation
             LerpRotateHead();
-            // SmoothRotate();
             // wait for smooth rotation
-            
             yield return new WaitForSeconds(waitSmoothRot);
+            blockInput = false;
             //angleInc = 0;
+            
             //angleY = 0;
+            
             // yield return new WaitForSeconds(blah);
             Crawl();
             // SmoothCrawl();
@@ -101,6 +103,7 @@ public class PlayerController : MonoBehaviour
         rotateTo = Quaternion.Euler(Snake[0].transform.rotation.eulerAngles.x,
                                     Snake[0].transform.rotation.eulerAngles.y + angleY,
                                     Snake[0].transform.rotation.eulerAngles.z);
+        angleY = 0;
     }
 
     void Crawl()
@@ -128,12 +131,12 @@ public class PlayerController : MonoBehaviour
         
         SmoothRotate(rotateTo);
         
-        //DebugInfos();
+        DebugInfos();
     }
     
     void DebugInfos()
     {
-        //Debug.Log("angleY:" + angleY + " rotateTo:" + rotateTo.eulerAngles);
+        Debug.Log("angleY:" + angleY);
     }
 
     void SmoothRotate(Quaternion finish)
@@ -166,8 +169,11 @@ public class PlayerController : MonoBehaviour
     
     void CheckInput()
     {
-        if ((Input.GetAxis("Fire1") != 0) && (Key == 0))
+        if ((Input.GetAxis("Fire1") != 0) && (Key == 0) && (!blockInput))
+        {
             Key = Input.GetAxis("Fire1");
+            blockInput = true;
+        }
 
         if((Key != 0) && (Input.GetAxis("Fire1") == 0))
         {
