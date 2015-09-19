@@ -15,11 +15,11 @@ public class PlayerController : MonoBehaviour
     private FruitController Fruit;
 
     // delay
-    public float speed = 0.5f;
+    public float turnDelay = 0.5f;
     // rotate wait
-    float waitSmoothRot = 3f;
+    float waitSmoothRot = 2f;
     // crawl wait
-    float waitCrawl = 3f;
+    float waitCrawl = 2f;
     
     // angle to construct and assign to the snake's head
     /*
@@ -29,11 +29,13 @@ public class PlayerController : MonoBehaviour
     private int LeAngleZ = 0;
     */
 
+    Vector3[] moveTo = new Vector3[10];
 
     Quaternion rotateTo = Quaternion.Euler(0, 0, 0);
 
-    float lerpSpeed = 1;
-    float accuracy = 0.1f;
+    float lerpSpeed = 2;
+    float rotAccuracy = 0.1f;
+    float movAccuracy = 0.01f;
 
     float angleInc;
     float angle;
@@ -53,6 +55,7 @@ public class PlayerController : MonoBehaviour
         Snake.Add(SnakeHead);
 
         SnakeHead.transform.position = new Vector3(5,0,5);
+        moveTo[0] = Snake[0].transform.position + Snake[0].transform.forward;
         //SnakeHead.transform.rotation = LeAngle;
 
         StartCoroutine(SnakeControl());
@@ -69,36 +72,30 @@ public class PlayerController : MonoBehaviour
         while(alive)
         {
             // delay between turns
-            yield return new WaitForSeconds(speed);
+            yield return new WaitForSeconds(turnDelay);
 
+            // assign movement before rotation
+            // SmoothCrawl();
             // assign rotation
-            LerpRotateHead();
+
+            Crawl();
+            //yield return new WaitForSeconds(waitCrawl);
+            //for(int i = 1; i < Snake.Count; i++)
+                //moveTo[i] = new Vector3(0, 0, 0);
+
+            RotateHead();
+            blockInput = false; // move this.
             // wait for smooth rotation
             yield return new WaitForSeconds(waitSmoothRot);
-            blockInput = false;
-            //angleInc = 0;
             
-            //angleY = 0;
+            
             
             // yield return new WaitForSeconds(blah);
-            Crawl();
-            // SmoothCrawl();
+            
         }
     }
     
-
-    // THE PROBLEM HAILS FROM HERE.
     void RotateHead()
-    {
-        Quaternion angle = Quaternion.Euler(0, CorrectAngle(Snake[0].transform.rotation.eulerAngles.y + angleY), 0);
-        Snake[0].transform.rotation = angle;
-        angleY = 0;
-        
-        //angle = Snake[0].transform.rotation.y;
-        //Quaternion angle = Quaternion.Euler(0, CorrectAngle(Snake[0].transform.rotation.eulerAngles.y + angleY), 0);
-    }
-
-    void LerpRotateHead()
     {
         rotateTo = Quaternion.Euler(Snake[0].transform.rotation.eulerAngles.x,
                                     Snake[0].transform.rotation.eulerAngles.y + angleY,
@@ -106,48 +103,68 @@ public class PlayerController : MonoBehaviour
         angleY = 0;
     }
 
+    // fill moveTo array
     void Crawl()
     {
-        Vector3 coords, prevCoords;
-
-        prevCoords = Snake[0].transform.position;
+        // record increment of first coordinate
         Vector3 forV = Snake[0].transform.forward;
-        Snake[0].transform.position += forV;
-
+        moveTo[0] = Snake[0].transform.position + forV;   // this is FUCKED UP somehow. Sometimes. Be careful here.
+                            //  Maybe should clean up all coords by rounding ALWAYS.
         
-
-        for (int i = 1; i < Snake.Count; i++)
+        // every tail follows the one before
+        for (int i = 1; i < Snake.Count + 1; i++)    // 10 - max tail count or snake.count + 1
         {
-            // ADD LERP MOVEMENT
-            coords = prevCoords;
-            prevCoords = Snake[i].transform.position;
-            Snake[i].transform.position = coords;
+            moveTo[i] = Snake[i-1].transform.position;
+        }
+    }
+
+    // lerp move to moveTo    
+    void SmoothCrawl()
+    {
+        // THIS ALREADY NEEDS TO KNOW WHICH AXIS WE'RE CRAWLIN ON. MARVELLOUS.
+        //  Actually, you can take a diff vector. That's it.
+        //  Actually, dummy, be more careful with what the hell you diff!
+
+        for(int i = 0; i < Snake.Count; i++)
+        {
+            Vector3 from = Snake[i].transform.position;
+            Vector3 to   = moveTo[i];
+            
+            // if not within margin of destination, increment.
+            Vector3 diff = from - to;
+            //Debug.Log("head goes: " + moveTo[0] + " from: " + from + " to: " + to + " diff: " + diff);
+            if(Mathf.Abs(diff.magnitude) > movAccuracy)
+            {
+                Snake[i].transform.position = Vector3.Lerp(from, to, 0.1f);
+                //Snake[i].transform.position += diff / 1000000;
+            }
+
+            if (Mathf.Abs(diff.magnitude) <= movAccuracy)
+            {
+                Snake[i].transform.position = moveTo[i];
+            }
         }
     }
     
+
     void FixedUpdate()
     {
         CheckInput();
-        
         SmoothRotate(rotateTo);
+        SmoothCrawl();
         
-        DebugInfos();
-    }
-    
-    void DebugInfos()
-    {
-        Debug.Log("angleY:" + angleY);
     }
 
+    
     void SmoothRotate(Quaternion finish)
     {
         Quaternion from = Quaternion.Euler(0, Snake[0].transform.rotation.eulerAngles.y, 0);
         Quaternion to = Quaternion.Euler(0, Snake[0].transform.rotation.eulerAngles.y + angleInc, 0);
 
-        if (Mathf.Abs(Snake[0].transform.rotation.eulerAngles.y - finish.eulerAngles.y) > accuracy)
+        if (Mathf.Abs(Snake[0].transform.rotation.eulerAngles.y - finish.eulerAngles.y) > rotAccuracy)
             Snake[0].transform.rotation = Quaternion.Lerp(from, to, lerpSpeed);
 
-        if ((Mathf.Abs(Snake[0].transform.rotation.eulerAngles.y - finish.eulerAngles.y) <= accuracy) &&
+        if ((Mathf.Abs(Snake[0].transform.rotation.eulerAngles.y - finish.eulerAngles.y) <= rotAccuracy) &&
             (Snake[0].transform.rotation != finish))
         {
             Snake[0].transform.rotation = finish;
@@ -167,6 +184,8 @@ public class PlayerController : MonoBehaviour
         return (int)angle;
     }
     
+    // This needs to become a lot smarter.
+    // It needs to determine which axes it needs to manipulate.
     void CheckInput()
     {
         if ((Input.GetAxis("Fire1") != 0) && (Key == 0) && (!blockInput))
@@ -187,15 +206,12 @@ public class PlayerController : MonoBehaviour
                 angleY = -90;
                 angleInc = -1;
             }
-            else if (Key == 0)
-            { 
-                angleY = 0;
-            }
 
+            // this will NEVER be accessed. Clean it.
             Key = 0;
         }
     }
-
+    
 
     // to do: move collider processing to walls, fruits, tails.
     void OnTriggerEnter(Collider other)
