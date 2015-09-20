@@ -19,14 +19,15 @@ public class FruitController : MonoBehaviour
 	
 	void Show()
     {
-        int rX, rZ;
+        int rX, /*rY,*/rZ;
         // More hard-coded limits to remove
         rX = Random.Range(0, 19);
+        //rY = Random.Range(0, 19);
         rZ = Random.Range(0, 19);
 
         // Check for snake coords before spawning the fruit;
 
-        // reroll of snake occupies (rX, rY, rZ)
+        // reroll if snake occupies (rX, rY, rZ)
 
         // add a scale up animation for popping up?
         transform.position = new Vector3(rX, 0, rZ);
