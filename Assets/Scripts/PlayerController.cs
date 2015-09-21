@@ -13,8 +13,13 @@ public class PlayerController : MonoBehaviour
 
     private FruitController Fruit;
 
-
-    Vector3 leAngle;    
+    // angle to construct and assign to the snake's head
+    /*
+    private Quaternion LeAngle = Quaternion.Euler(0, 0, 0);
+    private int LeAngleX = 0;
+    private int LeAngleY = 0;
+    private int LeAngleZ = 0;
+    */
 
     Vector3[] moveTo = new Vector3[10];
 
@@ -29,10 +34,12 @@ public class PlayerController : MonoBehaviour
     float rotElapsed;
     float movElapsed;
     
+    float angleInc;
+
     private float angleX;
     private float angleY;
     private float angleZ;
-    private float KeyAD, KeyWS;
+    private float Key;
 
     Vector3 forV;
     bool blockInput = false;
@@ -56,14 +63,13 @@ public class PlayerController : MonoBehaviour
         moveTo[0] = Snake[0].transform.position + Snake[0].transform.forward;
         //SnakeHead.transform.rotation = LeAngle;
         
-        KeyAD = 0;
-        KeyWS = 0;
+        Key = 0;
         
         angleX = 0;
         angleY = 0;
         angleZ = 0;
-        
-        leAngle = new Vector3(0, 0, 0);
+
+        angleInc = 0;
         Vector3 forV = Snake[0].transform.forward;
 
         time = 0;
@@ -77,11 +83,9 @@ public class PlayerController : MonoBehaviour
             // delay between turns
             yield return new WaitForSeconds(turnDelay);
 
-            // main cycle
             RotateHead();
             Crawl();
 
-            
             // wait for longest of rotation or movement animations
             float motionDelay = 0;
             if (movTime > rotTime)
@@ -103,13 +107,9 @@ public class PlayerController : MonoBehaviour
 
     void FixedUpdate()
     {
-        //Debug.Log("Key: " + Key + " AD: " + Input.GetAxis("Fire1") + " WS: " + Input.GetAxis("Fire2") + " leAngle: " + leAngle);
-        //Debug.Log(" leAngle: " + leAngle);
-        //Debug.Log(" forV: " + forV);
-
         CheckInput();
         SmoothRotate(rotateTo);
-        SmoothCrawl();
+        SmoothCrawl();        
 
         //Debug.Log("Key: " + Key + " AngleMod: " + angleY);
         //Debug.Log("rotateTo: " + rotateTo.eulerAngles);
@@ -118,18 +118,11 @@ public class PlayerController : MonoBehaviour
 
 
     // This needs to become a lot smarter.
-    // Maybe compare current transform.forward and transform.right to Vector3.constants and proceed from there?
-    //  If tr.up is vector(0,-1,0), forward and right need to *-1. ...multiply them by the -1 taken from up?
-    //   With improved input this is almost deprecated.
-
-    // Or wait, this not only applies rotation, but also next forward? D'oh!
-    // Take care of this after input.
+    // Maybe compare current transform.forward to Vector3.constants and proceed from there?
     void RotateHead()
     {
-        
-
         // Axis processing HERE.
-        /*
+
         if (angleX == 0 && angleY == 0 && angleZ == 0)
         {
             forV = Snake[0].transform.forward;
@@ -141,71 +134,38 @@ public class PlayerController : MonoBehaviour
             forV = Snake[0].transform.right;
             forV *= -1;
         }
-        */
 
-        // clean this up into "non-zero, the value is the sign" etc.
-        if (leAngle == new Vector3(0, 0, 0))
-            forV = Snake[0].transform.forward;  // (0, 0, 1)
-        
-        else if (leAngle == new Vector3(0, 1, 0))    // around Y - left/right
-            forV = Snake[0].transform.right;
-        else if (leAngle == new Vector3(0, -1, 0))
-        {
-            forV = Snake[0].transform.right;
-            forV *= -1;
-        }
-        else if (leAngle == new Vector3(0, 0, 1))    // around Z - up/down
-            forV = Snake[0].transform.up;
-        else if (leAngle == new Vector3(0, 0, -1))
-        {
-            forV = Snake[0].transform.up;
-            forV *= -1;
-        }
-        
-
-
-        /* is this enough to account for our up being pointed downward?
-        if (transform.forward == Vector3.down)
-            forV *= -1;
-        */
-
-        // Now this processes the future angle.
-        /*
-        rotateTo = Quaternion.Euler(CorrectAngle(Snake[0].transform.rotation.eulerAngles.x + angleX),
-                                    CorrectAngle(Snake[0].transform.rotation.eulerAngles.y + angleY),
-                                    CorrectAngle(Snake[0].transform.rotation.eulerAngles.z + angleZ));
+        rotateTo = Quaternion.Euler(Snake[0].transform.rotation.eulerAngles.x + angleX,
+                                    Snake[0].transform.rotation.eulerAngles.y + angleY,
+                                    Snake[0].transform.rotation.eulerAngles.z + angleZ);
 
         angleX = 0;
         angleY = 0;
         angleZ = 0;
-        */
-
-        // Remember to apply CorrectAngle later if needed
-        // Either leAngle shouldn't be always reset, or it should be applied ONLY if there was input.
-        //  Try resetting it only on input?
-        rotateTo = Quaternion.Euler(leAngle);
-        
-        //leAngle = new Vector3(0, 0, 0);
     }
 
-    // Also forgotten to fix this. Y is welded here.
-    // Although, it's only on the margin check... might not be the problem.
-    // Actually, if check's never accessed, leAngle isn't being reset.
     void SmoothRotate(Quaternion finish)
     {
+        // Seems to be not needed
+        //Quaternion from = Snake[0].transform.rotation;
+        
+        /*
+        if (Mathf.Abs(Snake[0].transform.rotation.eulerAngles.y - finish.eulerAngles.y) > rotAccuracy)
+            Snake[0].transform.rotation = Quaternion.Lerp(Snake[0].transform.rotation, finish, 0.1f);
+        */
+        
         if (rotElapsed < rotTime)
         {
             rotElapsed += Time.deltaTime;
             Snake[0].transform.rotation = Quaternion.Lerp(Snake[0].transform.rotation, finish, rotElapsed/rotTime);
         }
 
-        // Check angle difference with float Vector3.Angle(from, to);
+        // on acc. -> dur. this might still be useful.
         if ((Mathf.Abs(Snake[0].transform.rotation.eulerAngles.y - finish.eulerAngles.y) <= rotAccuracy) &&
             (Snake[0].transform.rotation != finish))
         {
             Snake[0].transform.rotation = finish;
-            //leAngle = new Vector3(0, 0, 0);
-            //Debug.Log("HALLO");
+            angleY = 0;
             blockInput = false;
 
             rotElapsed = rotTime;
@@ -214,32 +174,43 @@ public class PlayerController : MonoBehaviour
 
 
 
+    // fill moveTo array
     // CAREFUL WITH THIS. FORWARD NEEDS TO BE CORRECT, ROTATIONS MAY FUDGE UP
     void Crawl()
     {
         moveTo[0] = Snake[0].transform.position + forV;
-        Debug.Log("leAngle: " + leAngle + " forV: " + forV);
-
+        
+        // every tail follows the one before
         for (int i = 1; i < Snake.Count + 1; i++)
         {
             moveTo[i] = Snake[i-1].transform.position;
         }
     }
     
+    // lerp move to moveTo    
     void SmoothCrawl()
     {
+        // THIS ALREADY NEEDS TO KNOW WHICH AXIS WE'RE CRAWLIN' ON. MARVELLOUS.
+        //  Actually, you can take a diff vector. That's it.
+        //  Actually, dummy, be more careful with what the hell you diff!
+
         for(int i = 0; i < Snake.Count; i++)
         {
             Vector3 from = Snake[i].transform.position;
             Vector3 to   = moveTo[i];
-                        
+
+            Vector3 diff = from - to;
+            /*
+            if(Mathf.Abs(diff.magnitude) > movAccuracy)     // move up to
+                Snake[i].transform.position = Vector3.Lerp(from, to, 0.1f);
+            */
             if(movElapsed < movTime)
             {
                 movElapsed += Time.deltaTime;
                 Snake[i].transform.position = Vector3.Lerp(from, to, movElapsed/movTime);
             }
 
-            Vector3 diff = from - to;
+            // on acc. -> dur. this might still be useful.
             if (Mathf.Abs(diff.magnitude) <= movAccuracy)   // snap
             {
                 Snake[i].transform.position = moveTo[i];
@@ -252,6 +223,7 @@ public class PlayerController : MonoBehaviour
     
         
     // Maybe I didn't account for the angle needing to be 360 and not 0 sometimes.
+    //  OH WOW, this isn't being used anywhere.
     int CorrectAngle(float angle)
     {
         if (Mathf.Abs(angle) < 5) angle = 0;
@@ -266,89 +238,31 @@ public class PlayerController : MonoBehaviour
 
     // This needs to become a lot smarter.
     // It needs to determine which axes it needs to manipulate.
-
-    // well, not that much smarter, but we'll need a second key.
-    // This probably needs to become an int type, returning only value.
-    // Introduce RotateRight/Left, LookUp/Down? Pass it le Key?
-
-    // OOOH boy am I nervous about this one. Looks good though.
-    //  Dunn output anything doe!
-    
-    // Yeah, slick looks don't quite cut it. :'(
-    //  Now it seems to work.
     void CheckInput()
     {
-        /*
-        if((Key == 0) && (!blockInput) && ((Input.GetAxis("Fire1") != 0) || (Input.GetAxis("Fire2") != 0)))
+        if ((Input.GetAxis("Fire1") != 0) && (Key == 0) && (!blockInput))
         {
-            if(Input.GetAxis("Fire1") != 0)
-                leAngle = RotateLeft_Right(Key);
-            else if(Input.GetAxis("Fire2") != 0)    // just if or else if?
-                leAngle = LookUp_Down(Key);
-            
+            Key = Input.GetAxis("Fire1");
+        }
+
+        if((Key != 0) && (Input.GetAxis("Fire1") == 0) && (!blockInput))
+        {
+            if (Key > 0)
+            {
+                angleY = 90;
+                angleInc = 2;
+            }
+            else if (Key < 0)
+            { 
+                angleY = -90;
+                angleInc = -2;
+            }
+
             Key = 0;
-            blockInput = true;
+            blockInput = true;  // just where do you need to be, you fucking asshole.            
         }
-        */
+    }    
 
-        if ((KeyAD == 0) && (!blockInput) && (Input.GetAxis("Fire1") != 0))
-        {
-            KeyAD = Input.GetAxis("Fire1");
-        }
-
-        if ((KeyAD != 0) && (!blockInput) && (Input.GetAxis("Fire1") == 0))
-        {
-            //leAngle = RotateLeft_Right(KeyAD);
-            RotateLeft_Right(KeyAD);
-            KeyAD = 0;
-            blockInput = true;
-        }
-
-        if ((KeyWS == 0) && (!blockInput) && (Input.GetAxis("Fire2") != 0))
-        {
-            KeyWS = Input.GetAxis("Fire2");
-        }
-
-        if ((KeyWS != 0) && (!blockInput) && (Input.GetAxis("Fire2") == 0))
-        {
-            //leAngle = LookUp_Down(KeyWS);
-            LookUp_Down(KeyWS);
-            KeyWS = 0;
-            blockInput = true;
-        }
-
-    }
-
-    // A-D.
-    void RotateLeft_Right(float Key)
-    //Vector3 RotateLeft_Right(float Key)
-    {
-        leAngle = new Vector3(0, 0, 0);
-        for(int i = 0; i < 3; i++)
-        {
-            if (Snake[0].transform.up[i] != 0)
-            {
-                leAngle[i] += Snake[0].transform.up[i] * 90 * Key;
-            }
-        }
-
-    }
-
-    // W-S.
-    // Seems to alter wrong axis??
-    void LookUp_Down(float Key)
-    //Vector3 LookUp_Down(float Key)
-    {
-        leAngle = new Vector3(0, 0, 0);
-        for (int i = 0; i < 3; i++)
-        {
-            if (Snake[0].transform.right[i] != 0)
-            {
-                leAngle[i] += Snake[0].transform.right[i] * 90 * Key * -1;  // WS seems to be inverted. I will think later about why the hell.
-            }
-        }
-
-    }
 
     // to do: move collider processing to walls, fruits, tails.
     void OnTriggerEnter(Collider other)
