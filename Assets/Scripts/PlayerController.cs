@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using System;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -14,11 +13,6 @@ public class PlayerController : MonoBehaviour
 
     private FruitController Fruit;
 
-    // delay
-    public float turnDelay = 0.5f;
-    // rotate wait
-    public float waitSmoothRot = 2f;
-    
     // angle to construct and assign to the snake's head
     /*
     private Quaternion LeAngle = Quaternion.Euler(0, 0, 0);
@@ -31,10 +25,15 @@ public class PlayerController : MonoBehaviour
 
     Quaternion rotateTo = Quaternion.Euler(0, 0, 0);
 
-    float lerpSpeed = 1;
-    float rotAccuracy = 1f;
+    float rotAccuracy = 3f;
     float movAccuracy = 0.01f;
 
+    public float turnDelay = 1f;
+    public float rotTime = 2;
+    public float movTime = 2;
+    float rotElapsed;
+    float movElapsed;
+    
     float angleInc;
 
     private float angleX;
@@ -49,7 +48,7 @@ public class PlayerController : MonoBehaviour
     int spawnCounter = 0;
 
     float time;
-
+    
     void Start()
     {
         // get fruit controller
@@ -63,9 +62,7 @@ public class PlayerController : MonoBehaviour
         SnakeHead.transform.position = new Vector3(5,0,5);
         moveTo[0] = Snake[0].transform.position + Snake[0].transform.forward;
         //SnakeHead.transform.rotation = LeAngle;
-
-        StartCoroutine(SnakeControl());
-
+        
         Key = 0;
         
         angleX = 0;
@@ -75,7 +72,8 @@ public class PlayerController : MonoBehaviour
         angleInc = 0;
         Vector3 forV = Snake[0].transform.forward;
 
-        time = Time.time;
+        time = 0;
+        StartCoroutine(SnakeControl());
     }
         
     IEnumerator SnakeControl()
@@ -88,21 +86,22 @@ public class PlayerController : MonoBehaviour
             RotateHead();
             Crawl();
 
-            // wait for smooth rotation            
-            yield return new WaitForSeconds(waitSmoothRot);
-            
+            // wait for longest of rotation or movement animations
+            float motionDelay = 0;
+            if (movTime > rotTime)
+                motionDelay = movTime;
+            else
+                motionDelay = rotTime;
+            movElapsed = 0;
+            rotElapsed = 0;
+            yield return new WaitForSeconds(motionDelay);            
 
             // crap to do in the turn's end
-            
-
             if(spawnTail && (spawnCounter-- == 0))
             {
                 AddTail();
                 spawnTail = false;
             }
-
-            /*if (AngleWithinMargin(angleY))
-                blockInput = false;*/
         }
     }
 
@@ -110,10 +109,11 @@ public class PlayerController : MonoBehaviour
     {
         CheckInput();
         SmoothRotate(rotateTo);
-        SmoothCrawl();
+        SmoothCrawl();        
+
         //Debug.Log("Key: " + Key + " AngleMod: " + angleY);
         //Debug.Log("rotateTo: " + rotateTo.eulerAngles);
-        Debug.Log(Time.time - time);
+        //Debug.Log(Time.time - time + " " + Time.deltaTime);
     }
 
 
@@ -146,25 +146,32 @@ public class PlayerController : MonoBehaviour
 
     void SmoothRotate(Quaternion finish)
     {
-        Quaternion from = Quaternion.Euler(0, Snake[0].transform.rotation.eulerAngles.y, 0);
-        Quaternion to = Quaternion.Euler(0, Snake[0].transform.rotation.eulerAngles.y + angleInc, 0);
-
-        // if current is outside of margin of final...
+        // Seems to be not needed
+        //Quaternion from = Snake[0].transform.rotation;
+        
+        /*
         if (Mathf.Abs(Snake[0].transform.rotation.eulerAngles.y - finish.eulerAngles.y) > rotAccuracy)
-            Snake[0].transform.rotation = Quaternion.Lerp(from, to, lerpSpeed);
+            Snake[0].transform.rotation = Quaternion.Lerp(Snake[0].transform.rotation, finish, 0.1f);
+        */
+        
+        if (rotElapsed < rotTime)
+        {
+            rotElapsed += Time.deltaTime;
+            Snake[0].transform.rotation = Quaternion.Lerp(Snake[0].transform.rotation, finish, rotElapsed/rotTime);
+        }
 
-        // why the fuck is tnis not being accessed.
-        // if current is within extended margin of final... still not being accessed.
-        // This is why - rotAccuracy determines difference of FLOATS, ot DEGREES. 0.1 float is too much for a degree difference.
-        //  1f is WAY enough.
-        if ((Mathf.Abs(Snake[0].transform.rotation.eulerAngles.y - finish.eulerAngles.y) <= 3 * rotAccuracy) &&
+        // on acc. -> dur. this might still be useful.
+        if ((Mathf.Abs(Snake[0].transform.rotation.eulerAngles.y - finish.eulerAngles.y) <= rotAccuracy) &&
             (Snake[0].transform.rotation != finish))
         {
             Snake[0].transform.rotation = finish;
             angleY = 0;
             blockInput = false;
+
+            rotElapsed = rotTime;
         }
     }
+
 
 
     // fill moveTo array
@@ -191,49 +198,42 @@ public class PlayerController : MonoBehaviour
         {
             Vector3 from = Snake[i].transform.position;
             Vector3 to   = moveTo[i];
-            
+
             Vector3 diff = from - to;
+            /*
             if(Mathf.Abs(diff.magnitude) > movAccuracy)     // move up to
-            {
                 Snake[i].transform.position = Vector3.Lerp(from, to, 0.1f);
+            */
+            if(movElapsed < movTime)
+            {
+                movElapsed += Time.deltaTime;
+                Snake[i].transform.position = Vector3.Lerp(from, to, movElapsed/movTime);
             }
 
-            // this works fine.
+            // on acc. -> dur. this might still be useful.
             if (Mathf.Abs(diff.magnitude) <= movAccuracy)   // snap
             {
                 Snake[i].transform.position = moveTo[i];
+
+                movElapsed = movTime;
             }
         }
     }
     
     
-    
-    
+        
     // Maybe I didn't account for the angle needing to be 360 and not 0 sometimes.
     //  OH WOW, this isn't being used anywhere.
     int CorrectAngle(float angle)
     {
-        if (Math.Abs(angle) < 5) angle = 0;
-        if (Math.Abs(angle - 90) < 5) angle = 90;
-        if (Math.Abs(angle - 180) < 5) angle = 180;
-        if (Math.Abs(angle - 270) < 5) angle = 270;
-        if (Math.Abs(angle - 360) < 5) angle = 0;
+        if (Mathf.Abs(angle) < 5) angle = 0;
+        if (Mathf.Abs(angle - 90) < 5) angle = 90;
+        if (Mathf.Abs(angle - 180) < 5) angle = 180;
+        if (Mathf.Abs(angle - 270) < 5) angle = 270;
+        if (Mathf.Abs(angle - 360) < 5) angle = 0;
 
         return (int)angle;
     }
-
-    bool AngleWithinMargin(float angle)
-    {
-        if ((Math.Abs(angle) < 5) ||
-            (Math.Abs(angle - 90) < 5) ||
-            (Math.Abs(angle - 180) < 5) ||
-            (Math.Abs(angle - 270) < 5) ||
-            (Math.Abs(angle - 360) < 5))
-            return true;
-        else
-            return false;
-    }
-    
 
 
     // This needs to become a lot smarter.
@@ -262,6 +262,7 @@ public class PlayerController : MonoBehaviour
             blockInput = true;  // just where do you need to be, you fucking asshole.            
         }
     }    
+
 
     // to do: move collider processing to walls, fruits, tails.
     void OnTriggerEnter(Collider other)
