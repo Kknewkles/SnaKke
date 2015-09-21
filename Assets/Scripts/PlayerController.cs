@@ -32,16 +32,23 @@ public class PlayerController : MonoBehaviour
     Quaternion rotateTo = Quaternion.Euler(0, 0, 0);
 
     float lerpSpeed = 1;
-    float rotAccuracy = 0.1f;
+    float rotAccuracy = 1f;
     float movAccuracy = 0.01f;
 
     float angleInc;
-    
+
+    private float angleX;
     private float angleY;
+    private float angleZ;
     private float Key;
 
     Vector3 forV;
     bool blockInput = false;
+
+    bool spawnTail = false;
+    int spawnCounter = 0;
+
+    float time;
 
     void Start()
     {
@@ -60,10 +67,15 @@ public class PlayerController : MonoBehaviour
         StartCoroutine(SnakeControl());
 
         Key = 0;
+        
+        angleX = 0;
         angleY = 0;
+        angleZ = 0;
 
         angleInc = 0;
         Vector3 forV = Snake[0].transform.forward;
+
+        time = Time.time;
     }
         
     IEnumerator SnakeControl()
@@ -73,12 +85,24 @@ public class PlayerController : MonoBehaviour
             // delay between turns
             yield return new WaitForSeconds(turnDelay);
 
-            RotateHead();            
+            RotateHead();
             Crawl();
-                        
+
             // wait for smooth rotation            
             yield return new WaitForSeconds(waitSmoothRot);
-            blockInput = false;
+            
+
+            // crap to do in the turn's end
+            
+
+            if(spawnTail && (spawnCounter-- == 0))
+            {
+                AddTail();
+                spawnTail = false;
+            }
+
+            /*if (AngleWithinMargin(angleY))
+                blockInput = false;*/
         }
     }
 
@@ -87,15 +111,19 @@ public class PlayerController : MonoBehaviour
         CheckInput();
         SmoothRotate(rotateTo);
         SmoothCrawl();
+        //Debug.Log("Key: " + Key + " AngleMod: " + angleY);
+        //Debug.Log("rotateTo: " + rotateTo.eulerAngles);
+        Debug.Log(Time.time - time);
     }
 
 
-
+    // This needs to become a lot smarter.
+    // Maybe compare current transform.forward to Vector3.constants and proceed from there?
     void RotateHead()
     {
         // Axis processing HERE.
-                
-        if(angleY == 0)
+
+        if (angleX == 0 && angleY == 0 && angleZ == 0)
         {
             forV = Snake[0].transform.forward;
         }
@@ -106,12 +134,14 @@ public class PlayerController : MonoBehaviour
             forV = Snake[0].transform.right;
             forV *= -1;
         }
-        
-        rotateTo = Quaternion.Euler(Snake[0].transform.rotation.eulerAngles.x,
+
+        rotateTo = Quaternion.Euler(Snake[0].transform.rotation.eulerAngles.x + angleX,
                                     Snake[0].transform.rotation.eulerAngles.y + angleY,
-                                    Snake[0].transform.rotation.eulerAngles.z);
-        
+                                    Snake[0].transform.rotation.eulerAngles.z + angleZ);
+
+        angleX = 0;
         angleY = 0;
+        angleZ = 0;
     }
 
     void SmoothRotate(Quaternion finish)
@@ -119,14 +149,20 @@ public class PlayerController : MonoBehaviour
         Quaternion from = Quaternion.Euler(0, Snake[0].transform.rotation.eulerAngles.y, 0);
         Quaternion to = Quaternion.Euler(0, Snake[0].transform.rotation.eulerAngles.y + angleInc, 0);
 
+        // if current is outside of margin of final...
         if (Mathf.Abs(Snake[0].transform.rotation.eulerAngles.y - finish.eulerAngles.y) > rotAccuracy)
             Snake[0].transform.rotation = Quaternion.Lerp(from, to, lerpSpeed);
 
-        if ((Mathf.Abs(Snake[0].transform.rotation.eulerAngles.y - finish.eulerAngles.y) <= rotAccuracy) &&
+        // why the fuck is tnis not being accessed.
+        // if current is within extended margin of final... still not being accessed.
+        // This is why - rotAccuracy determines difference of FLOATS, ot DEGREES. 0.1 float is too much for a degree difference.
+        //  1f is WAY enough.
+        if ((Mathf.Abs(Snake[0].transform.rotation.eulerAngles.y - finish.eulerAngles.y) <= 3 * rotAccuracy) &&
             (Snake[0].transform.rotation != finish))
         {
             Snake[0].transform.rotation = finish;
-            angleY = 0;            
+            angleY = 0;
+            blockInput = false;
         }
     }
 
@@ -161,9 +197,11 @@ public class PlayerController : MonoBehaviour
             {
                 Snake[i].transform.position = Vector3.Lerp(from, to, 0.1f);
             }
+
+            // this works fine.
             if (Mathf.Abs(diff.magnitude) <= movAccuracy)   // snap
             {
-                Snake[i].transform.position = moveTo[i];                
+                Snake[i].transform.position = moveTo[i];
             }
         }
     }
@@ -183,7 +221,21 @@ public class PlayerController : MonoBehaviour
 
         return (int)angle;
     }
+
+    bool AngleWithinMargin(float angle)
+    {
+        if ((Math.Abs(angle) < 5) ||
+            (Math.Abs(angle - 90) < 5) ||
+            (Math.Abs(angle - 180) < 5) ||
+            (Math.Abs(angle - 270) < 5) ||
+            (Math.Abs(angle - 360) < 5))
+            return true;
+        else
+            return false;
+    }
     
+
+
     // This needs to become a lot smarter.
     // It needs to determine which axes it needs to manipulate.
     void CheckInput()
@@ -193,7 +245,7 @@ public class PlayerController : MonoBehaviour
             Key = Input.GetAxis("Fire1");
         }
 
-        if((Key != 0) && (Input.GetAxis("Fire1") == 0))
+        if((Key != 0) && (Input.GetAxis("Fire1") == 0) && (!blockInput))
         {
             if (Key > 0)
             {
@@ -207,7 +259,7 @@ public class PlayerController : MonoBehaviour
             }
 
             Key = 0;
-            blockInput = true;
+            blockInput = true;  // just where do you need to be, you fucking asshole.            
         }
     }    
 
@@ -217,7 +269,8 @@ public class PlayerController : MonoBehaviour
         if (other.CompareTag("Fruit"))
         {
             Fruit.OnEaten();
-            AddTail();
+            spawnTail = true;
+            spawnCounter = 1;
         }
     }
 
@@ -225,7 +278,7 @@ public class PlayerController : MonoBehaviour
     {
         Vector3 move = Snake[0].transform.forward;
         Vector3 coords = Snake[Snake.Count - 1].transform.position - move;
-
+        
         // if you take one of existing/from objectpool, how do you distinguish and refer between them?
         SnakeTail = (GameObject)(Instantiate(SnakeTail, coords, Quaternion.identity));
         Snake.Add(SnakeTail);
