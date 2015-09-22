@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 
 
+
 public class PlayerController : MonoBehaviour
 {
     private bool alive = true;
@@ -36,9 +37,14 @@ public class PlayerController : MonoBehaviour
     
     float angleInc;
 
+    /*
     private float angleX;
     private float angleY;
     private float angleZ;
+    */
+    // =>
+    Vector3 angle;
+
     private float Key;
 
     Vector3 forV;
@@ -64,12 +70,15 @@ public class PlayerController : MonoBehaviour
         //SnakeHead.transform.rotation = LeAngle;
         
         Key = 0;
-        
+
+        /*
         angleX = 0;
         angleY = 0;
         angleZ = 0;
+        */
+        // =>
+        angle = new Vector3(0, 0, 0);
 
-        angleInc = 0;
         Vector3 forV = Snake[0].transform.forward;
 
         time = 0;
@@ -109,7 +118,7 @@ public class PlayerController : MonoBehaviour
     {
         CheckInput();
         SmoothRotate(rotateTo);
-        SmoothCrawl();        
+        SmoothCrawl();
 
         //Debug.Log("Key: " + Key + " AngleMod: " + angleY);
         //Debug.Log("rotateTo: " + rotateTo.eulerAngles);
@@ -118,15 +127,19 @@ public class PlayerController : MonoBehaviour
 
 
     // This needs to become a lot smarter.
-    // Maybe compare current transform.forward to Vector3.constants and proceed from there?
+    // Maybe compare current transform.forward and transform.right to Vector3.constants and proceed from there?
+    //  If tr.up is vector(0,-1,0), forward and right need to *-1. ...multiply them by the -1 taken from up?
+    //  
     void RotateHead()
     {
+        //Vector3 angle = new Vector3(0, 0, 0);
+        
         // Axis processing HERE.
-
+        
+        /*
         if (angleX == 0 && angleY == 0 && angleZ == 0)
-        {
-            forV = Snake[0].transform.forward;
-        }
+			forV = Snake[0].transform.forward;
+        
         else if (angleY > 0)
             forV = Snake[0].transform.right;
         else if (angleY < 0)
@@ -134,14 +147,41 @@ public class PlayerController : MonoBehaviour
             forV = Snake[0].transform.right;
             forV *= -1;
         }
+        */
+        
+        // =>
+        // not sure about this one. 
+        if (angle == new Vector3(0, 0, 0))
+            forV = Snake[0].transform.forward;
 
-        rotateTo = Quaternion.Euler(Snake[0].transform.rotation.eulerAngles.x + angleX,
-                                    Snake[0].transform.rotation.eulerAngles.y + angleY,
-                                    Snake[0].transform.rotation.eulerAngles.z + angleZ);
+        else if (angle[1] > 0)
+            forV = Snake[0].transform.right;
+        else if (angle[1] < 0)
+        {
+            forV = Snake[0].transform.right;
+            forV *= -1;
+        }
+        
+        
+        /*
+        rotateTo = Quaternion.Euler(CorrectAngle(Snake[0].transform.rotation.eulerAngles.x + angleX),
+                                    CorrectAngle(Snake[0].transform.rotation.eulerAngles.y + angleY),
+                                    CorrectAngle(Snake[0].transform.rotation.eulerAngles.z + angleZ));
+        */
+        // =>
+        
+        rotateTo = Quaternion.Euler(CorrectAngle(Snake[0].transform.rotation.eulerAngles.x + angle[0]),
+                                    CorrectAngle(Snake[0].transform.rotation.eulerAngles.y + angle[1]),
+                                    CorrectAngle(Snake[0].transform.rotation.eulerAngles.z + angle[2]));
+        
 
+        /*
         angleX = 0;
         angleY = 0;
         angleZ = 0;
+        */
+        // => 
+        angle = new Vector3(0, 0, 0);
     }
 
     void SmoothRotate(Quaternion finish)
@@ -161,11 +201,16 @@ public class PlayerController : MonoBehaviour
         }
 
         // on acc. -> dur. this might still be useful.
-        if ((Mathf.Abs(Snake[0].transform.rotation.eulerAngles.y - finish.eulerAngles.y) <= rotAccuracy) &&
-            (Snake[0].transform.rotation != finish))
+        if ((Mathf.Abs(Snake[0].transform.rotation.eulerAngles.y - finish.eulerAngles.y) <= rotAccuracy) && (Snake[0].transform.rotation != finish))
+        // =>
+        if ((Mathf.Abs(Snake[0].transform.rotation.eulerAngles[1] - finish.eulerAngles[1]) <= rotAccuracy) && (Snake[0].transform.rotation != finish))
         {
             Snake[0].transform.rotation = finish;
-            angleY = 0;
+            
+            //angleY = 0;
+            // =>
+            angle = new Vector3(0, 0, 0);
+            
             blockInput = false;
 
             rotElapsed = rotTime;
@@ -200,10 +245,7 @@ public class PlayerController : MonoBehaviour
             Vector3 to   = moveTo[i];
 
             Vector3 diff = from - to;
-            /*
-            if(Mathf.Abs(diff.magnitude) > movAccuracy)     // move up to
-                Snake[i].transform.position = Vector3.Lerp(from, to, 0.1f);
-            */
+
             if(movElapsed < movTime)
             {
                 movElapsed += Time.deltaTime;
@@ -223,7 +265,6 @@ public class PlayerController : MonoBehaviour
     
         
     // Maybe I didn't account for the angle needing to be 360 and not 0 sometimes.
-    //  OH WOW, this isn't being used anywhere.
     int CorrectAngle(float angle)
     {
         if (Mathf.Abs(angle) < 5) angle = 0;
@@ -238,9 +279,14 @@ public class PlayerController : MonoBehaviour
 
     // This needs to become a lot smarter.
     // It needs to determine which axes it needs to manipulate.
+
+    // well, not that much smarter, but we'll need a second key.
+    // This probably needs to become an int type, returning only value.
     void CheckInput()
     {
-        if ((Input.GetAxis("Fire1") != 0) && (Key == 0) && (!blockInput))
+        // check which avis to modify
+        
+        if ((Key == 0) && (Input.GetAxis("Fire1") != 0) && (!blockInput))
         {
             Key = Input.GetAxis("Fire1");
         }
@@ -249,13 +295,15 @@ public class PlayerController : MonoBehaviour
         {
             if (Key > 0)
             {
-                angleY = 90;
-                angleInc = 2;
+                //angleY = 90;
+                // =>
+                angle[1] = 90;
             }
             else if (Key < 0)
             { 
-                angleY = -90;
-                angleInc = -2;
+                //angleY = -90;
+                // =>
+                angle[1] = -90;
             }
 
             Key = 0;
