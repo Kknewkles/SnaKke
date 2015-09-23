@@ -79,6 +79,7 @@ public class SnakeController : MonoBehaviour
     void FixedUpdate()
     {
         ProcessInput(inputManager.Check());
+        // correct the angles that like to get screwed up here and there.
     }
 
     // This is it.
@@ -103,13 +104,36 @@ public class SnakeController : MonoBehaviour
         }
     }
 
+    Vector3 CorrectAngle(Vector3 angle)
+    {
+        int margin = 10;
+        
+        for(int i = 0; i < 3; i++)
+        {
+            if (Mathf.Abs(angle[i]) < margin)
+                angle[i] = 0;
+            if (Mathf.Abs(angle[i] - 90) < margin)
+                angle[i] = 90;
+            if (Mathf.Abs(angle[i] - 180) < margin)
+                angle[i] = 180;
+            if (Mathf.Abs(angle[i] - 270) < margin)
+                angle[i] = 270;
+            if (Mathf.Abs(angle[i] - 360) < margin)
+                angle[i] = 0;
+        }
+
+        return angle;
+    }
+
     int CorrectAngle(float angle)
     {
-        if (Mathf.Abs(angle) < 5) angle = 0;
-        if (Mathf.Abs(angle - 90) < 5) angle = 90;
-        if (Mathf.Abs(angle - 180) < 5) angle = 180;
-        if (Mathf.Abs(angle - 270) < 5) angle = 270;
-        if (Mathf.Abs(angle - 360) < 5) angle = 0;
+        int margin = 5;
+        
+        if (Mathf.Abs(angle) < margin) angle = 0;
+        if (Mathf.Abs(angle - 90) < margin) angle = 90;
+        if (Mathf.Abs(angle - 180) < margin) angle = 180;
+        if (Mathf.Abs(angle - 270) < margin) angle = 270;
+        if (Mathf.Abs(angle - 360) < margin) angle = 0;
 
         return (int)angle;
     }
@@ -122,30 +146,38 @@ public class SnakeController : MonoBehaviour
     void TurnLeft()
     {
         int axis = 0;
+        int sign = 1;
         for(int i = 0; i < 3; i++)
         {
             if (Snake[0].transform.up[i] != 0)
+            {
                 axis = i;
+                sign = (int)Snake[0].transform.up[i];
+            }
         }
 
         //angle[axis] = Snake[0].transform.rotation.eulerAngles[axis];
-        angle[axis] -= 90;
-        angle[axis] = CorrectAngle(angle[axis]);
-        Snake[0].transform.rotation = Quaternion.Euler(angle);
+        angle[axis] -= 90 * sign;
+        //angle[axis] = CorrectAngle(angle[axis]);
+        Snake[0].transform.rotation = Quaternion.Euler(CorrectAngle(angle));
     }
     void TurnRight()
     {
         int axis = 0;
+        int sign = 1;
         for (int i = 0; i < 3; i++)
         {
             if (Snake[0].transform.up[i] != 0)
+            {
                 axis = i;
+                sign = (int)Snake[0].transform.up[i];
+            }
         }
 
         //angle[axis] = Snake[0].transform.rotation.eulerAngles[axis];
-        angle[axis] += 90;
-        angle[axis] = CorrectAngle(angle[axis]);
-        Snake[0].transform.rotation = Quaternion.Euler(angle);
+        angle[axis] += 90 * sign;
+        //angle[axis] = CorrectAngle(angle[axis]);
+        Snake[0].transform.rotation = Quaternion.Euler(CorrectAngle(angle));
     }
 
     // vertical axis
@@ -153,30 +185,38 @@ public class SnakeController : MonoBehaviour
     void LookUp()
     {
         int axis = 0;
+        int sign = 1;
         for (int i = 0; i < 3; i++)
         {
             if (Snake[0].transform.right[i] != 0)
+            {
                 axis = i;
+                sign = (int)Snake[0].transform.right[i];
+            }
         }
 
         //angle[axis] = Snake[0].transform.rotation.eulerAngles[axis];
-        angle[axis] += 90;
-        angle[axis] = CorrectAngle(angle[axis]);
-        Snake[0].transform.rotation = Quaternion.Euler(angle);
+        angle[axis] += 90 * sign;
+        //angle[axis] = CorrectAngle(angle[axis]);
+        Snake[0].transform.rotation = Quaternion.Euler(CorrectAngle(angle));
     }
     void LookDown()
     {
         int axis = 0;
+        int sign = 1;
         for (int i = 0; i < 3; i++)
         {
             if (Snake[0].transform.right[i] != 0)
+            {
                 axis = i;
+                sign = (int)Snake[0].transform.right[i];
+            }
         }
 
         //angle[axis] = Snake[0].transform.rotation.eulerAngles[axis];
-        angle[axis] -= 90;
-        angle[axis] = CorrectAngle(angle[axis]);
-        Snake[0].transform.rotation = Quaternion.Euler(angle);
+        angle[axis] -= 90 * sign;
+        //angle[axis] = CorrectAngle(angle[axis]);
+        Snake[0].transform.rotation = Quaternion.Euler(CorrectAngle(angle));
     }
     
     // \\ --- CAUTION ---
