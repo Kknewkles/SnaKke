@@ -11,49 +11,33 @@ public class PlayerController : MonoBehaviour
     private GameObject SnakeHead;
     public GameObject SnakeTail;
     List<GameObject> Snake = new List<GameObject>();
-
-    private FruitController Fruit;
-
-    // angle to construct and assign to the snake's head
-    /*
-    private Quaternion LeAngle = Quaternion.Euler(0, 0, 0);
-    private int LeAngleX = 0;
-    private int LeAngleY = 0;
-    private int LeAngleZ = 0;
-    */
-
+    
     Vector3[] moveTo = new Vector3[10];
-
     Quaternion rotateTo = Quaternion.Euler(0, 0, 0);
+
+    Vector3 angle;
+    
 
     float rotAccuracy = 3f;
     float movAccuracy = 0.01f;
 
-    public float turnDelay = 1f;
-    public float rotTime = 2;
-    public float movTime = 2;
+    public float turnDelay = 0.5f;
+    public float rotTime = 1;
+    public float movTime = 1;
     float rotElapsed;
     float movElapsed;
     
-    float angleInc;
-
-    /*
-    private float angleX;
-    private float angleY;
-    private float angleZ;
-    */
-    // =>
-    Vector3 angle;
-
-    private float Key;
-
+    
     Vector3 forV;
+    private float KeyAD, KeyWS;
     bool blockInput = false;
 
+    private FruitController Fruit;
     bool spawnTail = false;
     int spawnCounter = 0;
 
     float time;
+
     
     void Start()
     {
@@ -65,18 +49,17 @@ public class PlayerController : MonoBehaviour
         SnakeHead = GameObject.FindWithTag("SnakeHead");
         Snake.Add(SnakeHead);
 
-        SnakeHead.transform.position = new Vector3(5,0,5);
-        moveTo[0] = Snake[0].transform.position + Snake[0].transform.forward;
-        //SnakeHead.transform.rotation = LeAngle;
+        // spawn conditions(AD)
+        //SnakeHead.transform.position = new Vector3(5,0,5);
+        // spawn conditions(WS)
+        SnakeHead.transform.position = new Vector3(0, 5, 5);
         
-        Key = 0;
+        moveTo[0] = Snake[0].transform.position + Snake[0].transform.forward;
+        
+        
+        KeyAD = 0;
+        KeyWS = 0;
 
-        /*
-        angleX = 0;
-        angleY = 0;
-        angleZ = 0;
-        */
-        // =>
         angle = new Vector3(0, 0, 0);
 
         Vector3 forV = Snake[0].transform.forward;
@@ -116,17 +99,20 @@ public class PlayerController : MonoBehaviour
 
     void FixedUpdate()
     {
-        CheckInput();
+        CheckInputAD();
+        CheckInputWS();
         SmoothRotate(rotateTo);
         SmoothCrawl();
 
+        //Debug.Log("Input is locked: " + blockInput);
+        //Debug.Log("Up: " + Snake[0].transform.up + " Right: " + Snake[0].transform.right);
+
         //Debug.Log("Key: " + Key + " AngleMod: " + angleY);
-        //Debug.Log("rotateTo: " + rotateTo.eulerAngles);
+        Debug.Log("rotateTo: " + rotateTo.eulerAngles);
         //Debug.Log(Time.time - time + " " + Time.deltaTime);
     }
 
 
-    // This needs to become a lot smarter.
     // Maybe compare current transform.forward and transform.right to Vector3.constants and proceed from there?
     //  If tr.up is vector(0,-1,0), forward and right need to *-1. ...multiply them by the -1 taken from up?
     //  
@@ -134,26 +120,17 @@ public class PlayerController : MonoBehaviour
     {
         //Vector3 angle = new Vector3(0, 0, 0);
         
-        // Axis processing HERE.
-        
-        /*
-        if (angleX == 0 && angleY == 0 && angleZ == 0)
-			forV = Snake[0].transform.forward;
-        
-        else if (angleY > 0)
-            forV = Snake[0].transform.right;
-        else if (angleY < 0)
-        {
-            forV = Snake[0].transform.right;
-            forV *= -1;
-        }
-        */
-        
-        // =>
-        // not sure about this one. 
-        if (angle == new Vector3(0, 0, 0))
-            forV = Snake[0].transform.forward;
+        // Axis processing HERE. Probably the most heavy-duty. Especially since forV's being calculated here.
+        // up to this point angle should be constructed FLAWLESSLY.
 
+        // DEFAULT
+        if (angle == new Vector3(0, 0, 0))
+        {
+            forV = Snake[0].transform.forward;
+        }
+
+        // default AD
+        // Ok, wait. Doesn't this need a bit of recognition itself? What is _angle_?... If it works by forward, then it's ok.
         else if (angle[1] > 0)
             forV = Snake[0].transform.right;
         else if (angle[1] < 0)
@@ -161,54 +138,59 @@ public class PlayerController : MonoBehaviour
             forV = Snake[0].transform.right;
             forV *= -1;
         }
-        
-        
-        /*
-        rotateTo = Quaternion.Euler(CorrectAngle(Snake[0].transform.rotation.eulerAngles.x + angleX),
-                                    CorrectAngle(Snake[0].transform.rotation.eulerAngles.y + angleY),
-                                    CorrectAngle(Snake[0].transform.rotation.eulerAngles.z + angleZ));
-        */
-        // =>
-        
-        rotateTo = Quaternion.Euler(CorrectAngle(Snake[0].transform.rotation.eulerAngles.x + angle[0]),
-                                    CorrectAngle(Snake[0].transform.rotation.eulerAngles.y + angle[1]),
-                                    CorrectAngle(Snake[0].transform.rotation.eulerAngles.z + angle[2]));
-        
 
-        /*
-        angleX = 0;
-        angleY = 0;
-        angleZ = 0;
-        */
-        // => 
+        // default WS
+        // rotations around either axis x or transform.right yield reverted angles...
+        //  this might also need revert.
+        else if (angle[0] > 0)
+        {
+            forV = Snake[0].transform.up;
+            forV *= -1;
+        }
+        else if (angle[0] < 0)
+        {
+            forV = Snake[0].transform.up;            
+        }
+        
+        // This is the root of double 180 on x rotate.
+        // And possibly more. If our snake starts with absolutely clean angle, why not make it independent of everything but rotations?
+        /*rotateTo = Quaternion.Euler(CorrectAngle(Snake[0].transform.rotation.eulerAngles.x + angle[0]),
+                                    CorrectAngle(Snake[0].transform.rotation.eulerAngles.y + angle[1]),
+                                    CorrectAngle(Snake[0].transform.rotation.eulerAngles.z + angle[2]));*/
+        rotateTo = Quaternion.Euler(rotateTo.eulerAngles.x + angle[0],
+                                    rotateTo.eulerAngles.y + angle[1],
+                                    rotateTo.eulerAngles.z + angle[2]);
+                
         angle = new Vector3(0, 0, 0);
     }
 
+    // this seems to be abstracted well enough to be forgotten about for some time.
+    // if I had better means to check accuracy, I'd might not have to have the axis business.
+    // Probably it will only work correctly for AD rotation...
     void SmoothRotate(Quaternion finish)
     {
-        // Seems to be not needed
-        //Quaternion from = Snake[0].transform.rotation;
-        
-        /*
-        if (Mathf.Abs(Snake[0].transform.rotation.eulerAngles.y - finish.eulerAngles.y) > rotAccuracy)
-            Snake[0].transform.rotation = Quaternion.Lerp(Snake[0].transform.rotation, finish, 0.1f);
-        */
-        
+        int axis = 0;
+
+        for (int i = 0; i < 3; i++)
+        {
+            if (Snake[0].transform.up[i] != 0)
+                axis = i;
+        }
+
         if (rotElapsed < rotTime)
         {
             rotElapsed += Time.deltaTime;
             Snake[0].transform.rotation = Quaternion.Lerp(Snake[0].transform.rotation, finish, rotElapsed/rotTime);
         }
 
-        // on acc. -> dur. this might still be useful.
-        if ((Mathf.Abs(Snake[0].transform.rotation.eulerAngles.y - finish.eulerAngles.y) <= rotAccuracy) && (Snake[0].transform.rotation != finish))
-        // =>
-        if ((Mathf.Abs(Snake[0].transform.rotation.eulerAngles[1] - finish.eulerAngles[1]) <= rotAccuracy) && (Snake[0].transform.rotation != finish))
+        // THIS IS WAY TOO FINICKY FOR 3D.
+        // condition: if angle between current rotation and destined rotation is less than margin of accuracy, snap.
+        if ((Mathf.Abs(Snake[0].transform.rotation.eulerAngles[axis] - finish.eulerAngles[axis]) <= rotAccuracy) && (Snake[0].transform.rotation != finish))
+        //if(Vector3.Angle(Snake[0].transform.rotation.eulerAngles, finish.eulerAngles) <= 5)
         {
+            
             Snake[0].transform.rotation = finish;
             
-            //angleY = 0;
-            // =>
             angle = new Vector3(0, 0, 0);
             
             blockInput = false;
@@ -225,7 +207,6 @@ public class PlayerController : MonoBehaviour
     {
         moveTo[0] = Snake[0].transform.position + forV;
         
-        // every tail follows the one before
         for (int i = 1; i < Snake.Count + 1; i++)
         {
             moveTo[i] = Snake[i-1].transform.position;
@@ -235,24 +216,18 @@ public class PlayerController : MonoBehaviour
     // lerp move to moveTo    
     void SmoothCrawl()
     {
-        // THIS ALREADY NEEDS TO KNOW WHICH AXIS WE'RE CRAWLIN' ON. MARVELLOUS.
-        //  Actually, you can take a diff vector. That's it.
-        //  Actually, dummy, be more careful with what the hell you diff!
-
         for(int i = 0; i < Snake.Count; i++)
         {
             Vector3 from = Snake[i].transform.position;
             Vector3 to   = moveTo[i];
-
-            Vector3 diff = from - to;
-
+            
             if(movElapsed < movTime)
             {
                 movElapsed += Time.deltaTime;
                 Snake[i].transform.position = Vector3.Lerp(from, to, movElapsed/movTime);
             }
 
-            // on acc. -> dur. this might still be useful.
+            Vector3 diff = from - to;
             if (Mathf.Abs(diff.magnitude) <= movAccuracy)   // snap
             {
                 Snake[i].transform.position = moveTo[i];
@@ -261,8 +236,7 @@ public class PlayerController : MonoBehaviour
             }
         }
     }
-    
-    
+        
         
     // Maybe I didn't account for the angle needing to be 360 and not 0 sometimes.
     int CorrectAngle(float angle)
@@ -282,41 +256,93 @@ public class PlayerController : MonoBehaviour
 
     // well, not that much smarter, but we'll need a second key.
     // This probably needs to become an int type, returning only value.
-    void CheckInput()
+    void CheckInputAD()
     {
-        // check which avis to modify
-        
-        if ((Key == 0) && (Input.GetAxis("Fire1") != 0) && (!blockInput))
+        // Axis check!
+        int axis = 0;
+        for (int i = 0; i < 3; i++ )
         {
-            Key = Input.GetAxis("Fire1");
+            if (Snake[0].transform.up[i] != 0)
+                axis = i;
+        }
+        
+        if ((KeyAD == 0) && (Input.GetAxis("Fire1") != 0) && (!blockInput))
+        {
+            KeyAD = Input.GetAxis("Fire1");
         }
 
-        if((Key != 0) && (Input.GetAxis("Fire1") == 0) && (!blockInput))
+        int sign = (int)Snake[0].transform.up[axis];
+        // it's y, if transform.up y != 0.
+        // Also, don't forget the sign multiple. By the value of the y, thankfully.
+        if((KeyAD != 0) && (Input.GetAxis("Fire1") == 0) && (!blockInput))
         {
-            if (Key > 0)
+            if (KeyAD > 0)
             {
-                //angleY = 90;
-                // =>
-                angle[1] = 90;
+                angle[axis] = 90 * sign;
+                // multiple how?? It's cranky!
             }
-            else if (Key < 0)
+            else if (KeyAD < 0)
             { 
-                //angleY = -90;
-                // =>
-                angle[1] = -90;
+                angle[axis] = -90 * sign;
             }
 
-            Key = 0;
+            KeyAD = 0;
             blockInput = true;  // just where do you need to be, you fucking asshole.            
+        }
+    }
+
+    void CheckInputWS()
+    {
+        // Axis check!
+        /*
+        int axis = 0;
+        for (int i = 0; i < 3; i++)
+        {
+            if (Snake[0].transform.right[i] != 0)
+                axis = i;
+        }*/
+
+        if ((KeyWS == 0) && (Input.GetAxis("Fire2") != 0) && (!blockInput))
+        {
+            KeyWS = Input.GetAxis("Fire2");
+        }
+
+        //int sign = (int)Snake[0].transform.right[axis];
+        // it's y, if transform.up y != 0.
+        // Also, don't forget the sign multiple. By the value of the y, thankfully.
+        if ((KeyWS != 0) && (Input.GetAxis("Fire2") == 0) && (!blockInput))
+        {
+            int axis = 0;
+            for (int i = 0; i < 3; i++)
+            {
+                if (Snake[0].transform.right[i] != 0)
+                    axis = i;
+            }
+            int sign = (int)Snake[0].transform.right[axis];
+
+            if (KeyWS > 0)
+            {
+                angle[axis] = -90 * sign;
+                // multiple how?? It's cranky!
+            }
+            else if (KeyWS < 0)
+            {
+                angle[axis] = 90 * sign;
+            }
+
+            KeyWS = 0;
+            blockInput = true;  // just where do you need to be, you fucking asshole.          
+            Debug.Log("angle: " + angle);
         }
     }    
 
-
-    // to do: move collider processing to walls, fruits, tails.
+    // TO DO: move collider processing to walls, fruits, tails.
+    // to do: tail should spawn where the fruit was.
     void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Fruit"))
         {
+            
             Fruit.OnEaten();
             spawnTail = true;
             spawnCounter = 1;
