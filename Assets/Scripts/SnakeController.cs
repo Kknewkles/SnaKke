@@ -7,28 +7,37 @@ public class SnakeController : MonoBehaviour
     // all the public vars that don't have to be accessed from another class, serialize them
     bool alive = true;
 
-    GameObject inputManagerObject;
-    InputManager inputManager;
-    float inputHor = 0;
-    float inputVer = 0;
-    int[] controls = new int[2];
-
     GameObject SnakeHead;                               // le head.
     public GameObject SnakeTail;                        // le tails.
     List<GameObject> Snake = new List<GameObject>();    // le snake.
 
+    GameObject inputManagerObject;
+    InputManager inputManager;
+    int[] controls = new int[2];
+    
     Vector3[] moveTo = new Vector3[10];     // array of next coords for tails; 10 max atm.
+    /*
     Quaternion rotateTo = Quaternion.Euler(0, 0, 0);    // not sure about this one.
-    Vector3 angle;  // this might be better. Try constructing it yourself and then applying to the head.
+    Vector3 angle = new Vector3(0, 0, 0);   // this might be better. Try constructing it yourself and then applying to the head.
+    */
 
-    float initialDelay = 3f;                // delay after launch    
-    [SerializeField] float cycleDelay = 1f; // delay between cycles.
+    [SerializeField] float initialDelay = 1f; // delay after launch    
+    [SerializeField] float rotationDelay = 1.5f; // delay between cycles.
+    
+    public float rotationSpeed = 20;    // change this into duration later
 
 
     Vector3 forV;   // vector for the head to form next coords for the head?
                     // maybe I should assign rotation to head in the same place.
 
-    bool noInput;   // if there's no input atm, apply.
+    bool isMoving = false;  // no input is applied during any kind of head motion
+
+    Vector3 horAxis = new Vector3(0, 1, 0);     // right of a classic basis
+    Vector3 verAxis = new Vector3(1, 0, 0);     // up of a classic basis
+
+    int[] nullArray = { 0, 0 };
+    public int[] controlCheck = { 0, 0 };
+
 
     void Start()
     {
@@ -46,185 +55,91 @@ public class SnakeController : MonoBehaviour
 
         // initial movement - go _forward_.
         moveTo[0] = Snake[0].transform.position + Snake[0].transform.forward;
-
-        // initial angle is default
-        angle = new Vector3(0, 0, 0);
-
-        noInput = true;
-
+                
         // launch ---
         StartCoroutine(SnakeCycle());
     }
-
-    // do everything with coroutines this time? Motion, rotation - everything?
+    
+    // hehe, we might not even need the Update().
     IEnumerator SnakeCycle()
     {
-        yield return new WaitForSeconds(2);
+        yield return new WaitForSeconds(initialDelay);
         while (alive)   // snake lives, snake crawls.
-                        // TO DO: think about introducing a pause bool.
+                        // TO DO: think about introducing a pause bool. if not for pause, at least for options.
         {
             // assign values from input; or assign final values.
 
 
             // if there is a rotation, rotate
+            if (controlCheck != nullArray)
+            {
+                ProcessInput(controlCheck);
+                controlCheck = new int[] {0,0};
+            }
 
             // move, always
-            // actually, hold off movement some. Shoulda tested rotations on a stationary ball.
-            yield return new WaitForSeconds(1);
-            noInput = true;
+            yield return new WaitForSeconds(rotationDelay);
+
+
         }
     }
     
-    // leave only input processing to updates.
-    void FixedUpdate()
+    void Update()
     {
-        ProcessInput(inputManager.Check());
-        // correct the angles that like to get screwed up here and there.
+        if (isMoving)
+        {
+            return;
+        }
+
+        inputManager.Check(controlCheck);
     }
 
-    // This is it.
+    // This is... eh. Probably ok.
+    // Zody has one func for each axis, you better do too.
     void ProcessInput(int[] controls)
     {
-        if (controls[0] == 0 && controls[1] == 0) ;
-        else if (noInput)
+        if (controls[0] != 0)
         {
-            // hor check
-            if (controls[0] < 0)
-                TurnLeft();
-            if (controls[0] > 0)
-                TurnRight();
-
-            // ver check. Don't forget about invert.
-            if (controls[1] < 0)
-                LookUp();
-            if (controls[1] > 0)
-                LookDown();
-
-            noInput = false;
+            StartCoroutine(SnakeRotate(controls[0] * horAxis));
+        }
+        else if (controls[1] != 0)
+        {
+            StartCoroutine(SnakeRotate(controls[1] * -verAxis));
         }
     }
 
-    Vector3 CorrectAngle(Vector3 angle)
+    void AngleCorrection()
     {
-        int margin = 10;
-        
-        for(int i = 0; i < 3; i++)
-        {
-            if (Mathf.Abs(angle[i]) < margin)
-                angle[i] = 0;
-            if (Mathf.Abs(angle[i] - 90) < margin)
-                angle[i] = 90;
-            if (Mathf.Abs(angle[i] - 180) < margin)
-                angle[i] = 180;
-            if (Mathf.Abs(angle[i] - 270) < margin)
-                angle[i] = 270;
-            if (Mathf.Abs(angle[i] - 360) < margin)
-                angle[i] = 0;
-        }
-
-        return angle;
-    }
-
-    int CorrectAngle(float angle)
-    {
-        int margin = 5;
-        
-        if (Mathf.Abs(angle) < margin) angle = 0;
-        if (Mathf.Abs(angle - 90) < margin) angle = 90;
-        if (Mathf.Abs(angle - 180) < margin) angle = 180;
-        if (Mathf.Abs(angle - 270) < margin) angle = 270;
-        if (Mathf.Abs(angle - 360) < margin) angle = 0;
-
-        return (int)angle;
-    }
-
-    // // --- CAUTION --- 
-
-    // determine relative horizontal axis, rotate.
-    // hor. rotations - axis is transform.up 
-    //  Now logically, application of the angle should be done somewhere else.
-    void TurnLeft()
-    {
-        int axis = 0;
-        int sign = 1;
-        for(int i = 0; i < 3; i++)
-        {
-            if (Snake[0].transform.up[i] != 0)
-            {
-                axis = i;
-                sign = (int)Snake[0].transform.up[i];
-            }
-        }
-
-        //angle[axis] = Snake[0].transform.rotation.eulerAngles[axis];
-        angle[axis] -= 90 * sign;
-        //angle[axis] = CorrectAngle(angle[axis]);
-        Snake[0].transform.rotation = Quaternion.Euler(CorrectAngle(angle));
-    }
-    void TurnRight()
-    {
-        int axis = 0;
-        int sign = 1;
-        for (int i = 0; i < 3; i++)
-        {
-            if (Snake[0].transform.up[i] != 0)
-            {
-                axis = i;
-                sign = (int)Snake[0].transform.up[i];
-            }
-        }
-
-        //angle[axis] = Snake[0].transform.rotation.eulerAngles[axis];
-        angle[axis] += 90 * sign;
-        //angle[axis] = CorrectAngle(angle[axis]);
-        Snake[0].transform.rotation = Quaternion.Euler(CorrectAngle(angle));
-    }
-
-    // vertical axis
-    // rotation axis - transform.right
-    void LookUp()
-    {
-        int axis = 0;
-        int sign = 1;
-        for (int i = 0; i < 3; i++)
-        {
-            if (Snake[0].transform.right[i] != 0)
-            {
-                axis = i;
-                sign = (int)Snake[0].transform.right[i];
-            }
-        }
-
-        //angle[axis] = Snake[0].transform.rotation.eulerAngles[axis];
-        angle[axis] += 90 * sign;
-        //angle[axis] = CorrectAngle(angle[axis]);
-        Snake[0].transform.rotation = Quaternion.Euler(CorrectAngle(angle));
-    }
-    void LookDown()
-    {
-        int axis = 0;
-        int sign = 1;
-        for (int i = 0; i < 3; i++)
-        {
-            if (Snake[0].transform.right[i] != 0)
-            {
-                axis = i;
-                sign = (int)Snake[0].transform.right[i];
-            }
-        }
-
-        //angle[axis] = Snake[0].transform.rotation.eulerAngles[axis];
-        angle[axis] -= 90 * sign;
-        //angle[axis] = CorrectAngle(angle[axis]);
-        Snake[0].transform.rotation = Quaternion.Euler(CorrectAngle(angle));
+        Vector3 angle = transform.rotation.eulerAngles;
+        angle.x = Mathf.Round(angle.x / 90) * 90;
+        angle.y = Mathf.Round(angle.y / 90) * 90;
+        angle.z = Mathf.Round(angle.z / 90) * 90;
+        transform.rotation = Quaternion.Euler(angle);
     }
     
-    // \\ --- CAUTION ---
 
-    // stub
-    IEnumerator SnakeRotate()
+    IEnumerator SnakeRotate(Vector3 axis)
     {
-        if (true) { yield return 0; }
+        isMoving = true;    // false it when crawl ends
+
+        // Time base it!
+        float currAngle = 0;
+        while(currAngle < 90)
+        {
+            float rotProgr = Time.deltaTime * rotationSpeed;  // leave it like this for now, but turn into time after.
+            if (rotProgr + currAngle > 90)
+            {
+                rotProgr = 90 - currAngle;
+            }
+            Snake[0].transform.Rotate(axis, rotProgr);
+
+            currAngle += rotProgr;
+
+            yield return null;
+        }
+        AngleCorrection();
+
+        isMoving = false;
     }
 
     // stub

@@ -17,7 +17,7 @@ public class InputManager : MonoBehaviour
         controls[1] = 0;
     }
 
-    public int[] Check()
+    public int[] Check(int[] controls)
     {
         intHor = 0;
         intVer = 0;

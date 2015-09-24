@@ -2,8 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 
-
-
 public class PlayerController : MonoBehaviour
 {
     private bool alive = true;
@@ -37,8 +35,7 @@ public class PlayerController : MonoBehaviour
     int spawnCounter = 0;
 
     float time;
-
-    
+        
     void Start()
     {
         // get fruit controller
@@ -201,6 +198,9 @@ public class PlayerController : MonoBehaviour
 
 
 
+    // // --- SALVAGE ---
+    // // ------------------------------
+
     // fill moveTo array
     // CAREFUL WITH THIS. FORWARD NEEDS TO BE CORRECT, ROTATIONS MAY FUDGE UP
     void Crawl()
@@ -236,8 +236,12 @@ public class PlayerController : MonoBehaviour
             }
         }
     }
-        
-        
+
+    // \\ --- SALVAGE ---
+    // \\ ------------------------------
+    
+
+
     // Maybe I didn't account for the angle needing to be 360 and not 0 sometimes.
     int CorrectAngle(float angle)
     {
@@ -290,7 +294,6 @@ public class PlayerController : MonoBehaviour
             blockInput = true;  // just where do you need to be, you fucking asshole.            
         }
     }
-
     void CheckInputWS()
     {
         // Axis check!
