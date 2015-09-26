@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class FruitController : MonoBehaviour
+public class FruitManager : MonoBehaviour
 {
 	// Spawn a fruit on game start, spawn another on fruit being eaten.
     //private GameObject fruit;
@@ -33,6 +33,7 @@ public class FruitController : MonoBehaviour
         transform.position = new Vector3(rX, 0, rZ);
     }
 
+    // This might die out completely once I hook everything up to the ObjectPool.
     void Hide()
     {
         // Add scale to zero when you switch to smooth motion, as an animation of being eaten.

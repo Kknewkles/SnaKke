@@ -9,5 +9,7 @@ public class Snake_EyesMover : MonoBehaviour
     {
         SnakeHead = GameObject.FindWithTag("SnakeHead");
         transform.parent = SnakeHead.transform;
+
+        // coord correction?
     }
 }

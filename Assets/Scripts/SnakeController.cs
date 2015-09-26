@@ -11,26 +11,22 @@ public class SnakeController : MonoBehaviour
     public GameObject SnakeTail;                        // le tails.
     List<GameObject> Snake = new List<GameObject>();    // le snake.
 
-    private FruitController Fruit;
+    private FruitManager Fruit;
     bool spawnTail = false;
     int spawnCounter = 0;
 
     GameObject inputManagerObject;
     InputManager inputManager;
-    int[] controls = new int[2];
-    
+        
     public Vector3[] moveTo = new Vector3[10];     // array of next coords for tails; 10 max atm.
     
     // durations --- 
-    [SerializeField] float initialDelay = 1f; // delay after launch    
-    [SerializeField] float rotationDelay = 1.5f; // delay between cycles.
-    
-    public float rotationSpeed = 20;    // change this into duration later
+    public float initialDelay = 1f; // delay after launch    
     
     public float movDuration;
     float movElapsed = 0;
-    float movAccuracy = 0.01f;
 
+    public float rotDuration = 2;    // change this into duration later
 
     Vector3 forV;   // vector for the head to form next coords for the head?
                     // maybe I should assign rotation to head in the same place.
@@ -42,9 +38,12 @@ public class SnakeController : MonoBehaviour
     //Vector3[] axes = { new Vector3(0, 1, 0), new Vector3(-1, 0, 0) };
 
     int[] nullArray = { 0, 0 };
-    public int[] controlCheck = { 0, 0 };
+    
+    int[] controlCheck = { 0, 0 };   // working variable for every check
+    int[] saveControls = { 0, 0 };   // variable for storing non-zero input
+    int[] applyInput = { 0, 0 };     // variable that applies to the snake
 
-
+    
     void Start()
     {
         // preparations ---
@@ -53,44 +52,62 @@ public class SnakeController : MonoBehaviour
         Snake.Add(SnakeHead);
 
         // get the fruit!
-        GameObject fruitControllerObject = GameObject.FindWithTag("Fruit");
-        Fruit = fruitControllerObject.GetComponent<FruitController>();
+        GameObject fruitManagerObject = GameObject.FindWithTag("Fruit");
+        Fruit = fruitManagerObject.GetComponent<FruitManager>();
         
         // get the input! ---
         inputManagerObject = GameObject.FindWithTag("InputManager");
         inputManager = inputManagerObject.GetComponent<InputManager>();
 
         // spawn conditions
-        SnakeHead.transform.position = new Vector3(5, 0, 5);        
-
-        // initial movement - go _forward_.
-        //moveTo[0] = Snake[0].transform.position + Snake[0].transform.forward;
-                
+        Vector3 spawnPoint = new Vector3(5, 0, 5);
+        SnakeHead.transform.position = spawnPoint;
+                        
         // launch ---
         StartCoroutine(SnakeCycle());
     }
 
     void Update()
     {
-        if (isMoving)
-        {
-            return;
-        }
+        // always poll
         inputManager.Check(controlCheck);
+
+        // save if not zero
+        if(controlCheck[0] != 0 || controlCheck[1] != 0)
+        {
+            saveControls[0] = controlCheck[0];
+            saveControls[1] = controlCheck[1];
+        }
+        
+        if(!isMoving)
+            return;
+        else
+        {
+            // apply if not moving
+            if(saveControls[0] != 0 || saveControls[1] != 0)
+            {
+                applyInput[0] = saveControls[0];
+                applyInput[1] = saveControls[1];
+            }
+        }
+
     }
 
     // This is... eh. Probably ok.
     void ProcessInput(int[] controls)
     {
         // hor axis
+        int value = 0;
         if (controls[0] != 0)
         {
-            StartCoroutine(SnakeRotate(controls[0] * horAxis));
+            value = controls[0];
+            StartCoroutine(SnakeRotate(value * horAxis));
         }
         // ver axis
         else if (controls[1] != 0)
         {
-            StartCoroutine(SnakeRotate(controls[1] * -verAxis));
+            value = controls[1];
+            StartCoroutine(SnakeRotate(value * -verAxis));
         }
     }
 
@@ -102,18 +119,13 @@ public class SnakeController : MonoBehaviour
         while (alive)   // snake lives, snake crawls.
                         // TO DO: think about introducing a pause bool. if not for pause, at least for options.
         {
-            // if there is a rotation, rotate
-            if (controlCheck != nullArray)
+            if(applyInput[0] != 0 || applyInput[1] != 0)
             {
-                ProcessInput(controlCheck);
-                //StartCoroutine(SnakeRotate(controls[axis] * axisArray[axis]));
-
-                // reset input
-                controlCheck = new int[] {0,0};
+                ProcessInput(applyInput);
+                
+                yield return new WaitForSeconds(rotDuration);
             }
-            yield return new WaitForSeconds(rotationDelay);
 
-            // move, always
             forV = Snake[0].transform.forward;
             moveTo[0] = Snake[0].transform.position + forV;
 
@@ -121,7 +133,7 @@ public class SnakeController : MonoBehaviour
             yield return new WaitForSeconds(movDuration);
 
             // spawn conditions
-            if (spawnTail && (spawnCounter-- == 0))
+            if (spawnTail && (--spawnCounter == 0))
             {
                 AddTail();
                 spawnTail = false;
@@ -134,28 +146,36 @@ public class SnakeController : MonoBehaviour
         isMoving = true;    // false it when crawl ends
                             // when you do correct input sequence.
 
-        // Time base this!
+        // WHILE NOT ROTATED
         float currAngle = 0;
         while(currAngle < 90)
         {
-            float rotProgr = Time.deltaTime * rotationSpeed;
-            if (rotProgr + currAngle > 90)
+            float incAngle = 90 * Time.deltaTime / rotDuration; // seems a bit hacky, but it's actually fine.
+            if (incAngle + currAngle > 90)
             {
-                rotProgr = 90 - currAngle;
+                incAngle = 90 - currAngle;
             }
-            Snake[0].transform.Rotate(axis, rotProgr);
+            Snake[0].transform.Rotate(axis, incAngle);  // rotate around axis by incAngle
 
-            currAngle += rotProgr;
+            currAngle += incAngle;
 
             yield return null;
         }
         AngleCorrection();
 
         isMoving = false;
+
+        // reset inputs
+        applyInput[0] = 0;
+        applyInput[1] = 0;
+        saveControls[0] = 0;
+        saveControls[1] = 0;
     }
 
     IEnumerator SnakeCrawl()
     {
+        isMoving = true;
+
         forV = Snake[0].transform.forward;
         moveTo[0] = Snake[0].transform.position + forV;
         
@@ -184,7 +204,10 @@ public class SnakeController : MonoBehaviour
         {
             Snake[i].transform.position = moveTo[i];
         }
+
+        isMoving = false;
     }
+
 
 
     void AngleCorrection()
@@ -207,13 +230,21 @@ public class SnakeController : MonoBehaviour
         }
     }
 
+    // This will need to become a bit smarter for the ObjectPool.
     public void AddTail()
     {
+        // is it + or - move vector?...
+        // does the last tail shift by head's move or previous's move?
+        // maybe we could pass the forth vector with the call. Should be correct.
+
         Vector3 move = Snake[0].transform.forward;
         Vector3 coords = Snake[Snake.Count - 1].transform.position - move;
 
         // if you take one of existing/from objectpool, how do you distinguish and refer between them?
         SnakeTail = (GameObject)(Instantiate(SnakeTail, coords, Quaternion.identity));
         Snake.Add(SnakeTail);
+
+        // with ObjectPool snake will have to track tails only up to snake's length,
+        //  which will have to become _a separate variable_ from Snake.Count.
     }
 }
