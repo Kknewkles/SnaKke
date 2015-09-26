@@ -7,20 +7,38 @@ public class FruitManager : MonoBehaviour
     //private GameObject fruit;
     
     private int fruitCount = 0;
-    // Snake should know how much fruits there are;
-    //  and generate enough snake tails.
+    // Snake should know how much fruits there are and generate enough snake tails.
     public int maxFruits = 10;
+
+    GameObject Snake;
+    SnakeController SnakeScript;
 
     void Start()
     {
-        //fruit = GameObject.FindWithTag("Fruit");
+        Snake = GameObject.FindWithTag("SnakeHead");
+        SnakeScript = Snake.GetComponent<SnakeController>();
+
         Show();
 	}
 	
+    // again, this is snake, so we don't need to check who's the one bumpin'.
+    // But we need to refer to snake to grow it a tail.
+    // Or, if I had a better idea about HOW TO EFFIN CODE...
+    void OnTriggerEnter(Collider other)
+    {
+        // Fruit's eaten, snake's growin'
+        OnEaten();
+        SnakeScript.AddTail();
+        SnakeScript.spawnTail = true;
+        SnakeScript.spawnCounter = 1;
+    }
+
 	void Show()
     {
-        int rX, /*rY,*/rZ;
+        // Is all this stuff taken from LevelManager?        
         // More hard-coded limits to remove
+        int rX, /*rY,*/rZ;
+        
         rX = Random.Range(0, 19);
         //rY = Random.Range(0, 19);
         rZ = Random.Range(0, 19);
@@ -34,6 +52,7 @@ public class FruitManager : MonoBehaviour
     }
 
     // This might die out completely once I hook everything up to the ObjectPool.
+    // void Recycle()
     void Hide()
     {
         // Add scale to zero when you switch to smooth motion, as an animation of being eaten.
@@ -47,6 +66,6 @@ public class FruitManager : MonoBehaviour
         if (fruitCount < maxFruits)
             Show();
         //else
-            //victory
+            //victory pop-up?
     }
 }

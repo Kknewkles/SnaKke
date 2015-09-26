@@ -5,15 +5,15 @@ using System.Collections.Generic;
 public class SnakeController : MonoBehaviour
 {
     // all the public vars that don't have to be accessed from another class, serialize them
-    bool alive = true;
+    public bool alive = true;
 
     GameObject SnakeHead;                               // le head.
     public GameObject SnakeTail;                        // le tails.
     List<GameObject> Snake = new List<GameObject>();    // le snake.
 
-    private FruitManager Fruit;
-    bool spawnTail = false;
-    int spawnCounter = 0;
+    
+    public bool spawnTail = false;
+    public int spawnCounter = 0;
 
     GameObject inputManagerObject;
     InputManager inputManager;
@@ -51,10 +51,6 @@ public class SnakeController : MonoBehaviour
         SnakeHead = GameObject.FindWithTag("SnakeHead");
         Snake.Add(SnakeHead);
 
-        // get the fruit!
-        GameObject fruitManagerObject = GameObject.FindWithTag("Fruit");
-        Fruit = fruitManagerObject.GetComponent<FruitManager>();
-        
         // get the input! ---
         inputManagerObject = GameObject.FindWithTag("InputManager");
         inputManager = inputManagerObject.GetComponent<InputManager>();
@@ -188,14 +184,14 @@ public class SnakeController : MonoBehaviour
 
         while(movElapsed < movDuration)
         {
-            for (int i = 0; i < Snake.Count; i++)
+            for(int i = 0; i < Snake.Count; i++)
             {
                 Vector3 start = Snake[i].transform.position;
                 Vector3 target = moveTo[i];
                 Vector3 range = target - start;
 
                 movElapsed = Mathf.MoveTowards(movElapsed, movDuration, Time.deltaTime);
-                Snake[i].transform.position = start + range * (movElapsed / movDuration);
+                Snake[i].transform.position = start + range * (movElapsed / movDuration);                
             }
             yield return null;
         }
@@ -217,17 +213,6 @@ public class SnakeController : MonoBehaviour
         angle.y = Mathf.Round(angle.y / 90) * 90;
         angle.z = Mathf.Round(angle.z / 90) * 90;
         transform.rotation = Quaternion.Euler(angle);
-    }
-
-    // collider move time soon
-    void OnTriggerEnter(Collider other)
-    {
-        if (other.CompareTag("Fruit"))
-        {
-            Fruit.OnEaten();
-            spawnTail = true;
-            spawnCounter = 1;
-        }
     }
 
     // This will need to become a bit smarter for the ObjectPool.
