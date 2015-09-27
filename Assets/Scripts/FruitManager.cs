@@ -28,7 +28,6 @@ public class FruitManager : MonoBehaviour
     {
         // Fruit's eaten, snake's growin'
         OnEaten();
-        SnakeScript.AddTail();
         SnakeScript.spawnTail = true;
         SnakeScript.spawnCounter = 1;
     }

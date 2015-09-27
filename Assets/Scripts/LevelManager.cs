@@ -1,10 +1,21 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Xml;
 
 public class Level
 {
     int getSomeInfo = 0;
 }
+
+/*
+[Serializable] class WallInfo
+{
+    [XmlAttribute]
+    public Vector3 Position;
+    [XmlAttribute]
+    public Vector3 Scale;
+}
+*/
 
 public class LevelManager : MonoBehaviour
 {

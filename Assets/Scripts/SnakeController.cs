@@ -175,9 +175,9 @@ public class SnakeController : MonoBehaviour
         forV = Snake[0].transform.forward;
         moveTo[0] = Snake[0].transform.position + forV;
         
-        for (int i = 1; i < Snake.Count + 1; i++)
+        for (int i = 1; i < Snake.Count; i++)
         {
-            moveTo[i] = Snake[i-1].transform.position;
+            moveTo[i] = Snake[i - 1].transform.position;
         }
         
         movElapsed = 0;
