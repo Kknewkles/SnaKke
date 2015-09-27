@@ -13,10 +13,16 @@ public class FruitManager : MonoBehaviour
     GameObject Snake;
     SnakeController SnakeScript;
 
+    GameObject optionsManager;
+    OptionsManager optionsManagerScript;
+
     void Start()
     {
         Snake = GameObject.FindWithTag("SnakeHead");
         SnakeScript = Snake.GetComponent<SnakeController>();
+        
+        optionsManager = GameObject.FindWithTag("OptionsManager");
+        optionsManagerScript = optionsManager.GetComponent<OptionsManager>();
 
         Show();
 	}
@@ -64,7 +70,12 @@ public class FruitManager : MonoBehaviour
         Hide();
         if (fruitCount < maxFruits)
             Show();
-        //else
-            //victory pop-up?
+        else
+        {
+            Debug.Log("Victory screen");
+            optionsManagerScript.Pause();
+            // level select, start screen, exit game
+        }
+        
     }
 }

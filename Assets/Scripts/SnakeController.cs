@@ -232,4 +232,9 @@ public class SnakeController : MonoBehaviour
         // with ObjectPool snake will have to track tails only up to snake's length,
         //  which will have to become _a separate variable_ from Snake.Count.
     }
+    
+    // all this to dedicated OptionsManager
+    // ---
+    
+    // ---
 }

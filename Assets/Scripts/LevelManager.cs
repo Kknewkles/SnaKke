@@ -25,13 +25,5 @@ public class LevelManager : MonoBehaviour
     Quaternion[] orients = new Quaternion[10];
     float[] scales = new float[10];
 
-    void Start()
-    {
-
-    }
-
-    void Update()
-    {
-
-    }
+    
 }
