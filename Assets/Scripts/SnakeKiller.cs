@@ -8,7 +8,7 @@ public class SnakeKiller : MonoBehaviour
 
     void Start()
     {
-        popupManagerObject = GameObject.FindWithTag("Popup Manager");
+        popupManagerObject = GameObject.FindWithTag("PopupManager");
         popupManager = popupManagerObject.GetComponent<PopupManager>();
     }
     

@@ -43,7 +43,7 @@ public class SnakeController : MonoBehaviour
     int[] saveControls = { 0, 0 };   // variable for storing non-zero input
     int[] applyInput = { 0, 0 };     // variable that applies to the snake
 
-    
+
     void Start()
     {
         // preparations ---
@@ -135,6 +135,7 @@ public class SnakeController : MonoBehaviour
                 spawnTail = false;
             }
         }
+
     }
         
     IEnumerator SnakeRotate(Vector3 axis)

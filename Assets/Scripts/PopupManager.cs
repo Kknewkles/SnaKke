@@ -10,19 +10,22 @@ public class PopupManager : MonoBehaviour
     Canvas canvas;
 
     public GameObject MainMenu;
+    public GameObject OptionsMenu;
     public GameObject DeathScreen;
 
     void Start()
     {
         // pause everything
         DeathScreen.SetActive(false);
+
         Time.timeScale = 0;
     }
 
-    // Start Screen
+    // Start Screen ---
     // will be replaced by Level Select 
     public void StartGame()
     {
+        
         Time.timeScale = 1;
         MainMenu.SetActive(false);        
     }
@@ -34,7 +37,23 @@ public class PopupManager : MonoBehaviour
     // ---
 
 
-    // Death Screen
+    // Options Menu ---
+    void Update()
+    {
+        if(Input.GetKeyDown(KeyCode.Escape))
+        {
+            Pause();
+        }
+    }
+
+    public void Pause()
+    {
+        Time.timeScale = Time.timeScale == 0 ? 1 : 0;
+    }
+    // ---
+
+
+    // Death Screen ---
     public void ShowDeathScreen()
     {
         Time.timeScale = 0;
@@ -55,6 +74,5 @@ public class PopupManager : MonoBehaviour
         Application.Quit();
 #endif
     }
-
     // ---
 }

@@ -13,16 +13,16 @@ public class FruitManager : MonoBehaviour
     GameObject Snake;
     SnakeController SnakeScript;
 
-    GameObject optionsManager;
-    OptionsManager optionsManagerScript;
+    GameObject popupManager;
+    PopupManager popupManagerScript;
 
     void Start()
     {
         Snake = GameObject.FindWithTag("SnakeHead");
         SnakeScript = Snake.GetComponent<SnakeController>();
         
-        optionsManager = GameObject.FindWithTag("OptionsManager");
-        optionsManagerScript = optionsManager.GetComponent<OptionsManager>();
+        popupManager = GameObject.FindWithTag("PopupManager");
+        popupManagerScript = popupManager.GetComponent<PopupManager>();
 
         Show();
 	}
@@ -42,18 +42,22 @@ public class FruitManager : MonoBehaviour
     {
         // Is all this stuff taken from LevelManager?        
         // More hard-coded limits to remove
-        int rX, /*rY,*/rZ;
+        int rX, rY, rZ;
         
         rX = Random.Range(0, 19);
-        //rY = Random.Range(0, 19);
+        rY = Random.Range(0, 19);
         rZ = Random.Range(0, 19);
 
         // Check for snake coords before spawning the fruit;
 
+        // And how the hell do you check obstacles?...
+        // have a list of obstacles, I guess
+        // Ooh! Read from XML! Or list.
+
         // reroll if snake occupies (rX, rY, rZ)
 
         // add a scale up animation for popping up?
-        transform.position = new Vector3(rX, 0, rZ);
+        transform.position = new Vector3(rX, rY, rZ);
     }
 
     // This might die out completely once I hook everything up to the ObjectPool.
@@ -73,7 +77,7 @@ public class FruitManager : MonoBehaviour
         else
         {
             Debug.Log("Victory screen");
-            optionsManagerScript.Pause();
+            popupManagerScript.Pause();
             // level select, start screen, exit game
         }
         
