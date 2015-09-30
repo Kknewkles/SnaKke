@@ -30,20 +30,6 @@ public class WallData
     [XmlAttribute] public float scale_z;
 }
 
-public class CubeEditor : EditorWindow
-{
-    [MenuItem("Window/XML Button")]
-    public static void ShowWindow()
-    {
-        EditorWindow.GetWindow(typeof(CubeEditor));
-    }
-
-    void OnGUI()
-    {
-        if(GUILayout.Button("Write XML")) ;
-    }
-}
-
 public class LevelToXML : MonoBehaviour
 {
     GameObject obstaclesParent;

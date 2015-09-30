@@ -98,37 +98,30 @@ public class XMLToLevel : MonoBehaviour
         obstacleList = (ArrayOfObstacleData)(deserializer.Deserialize(xmlReader));
         xmlReader.Close();
 
-        for(int i = 0; i < obstacleList.obstacles.Count; i++)
+        for(int j = 0; j < obstacleList.obstacles.Count; j++)
         {
-            float x = obstacleList.obstacles[i].x;
-            float y = obstacleList.obstacles[i].y;
-            float z = obstacleList.obstacles[i].z;
+            float x = obstacleList.obstacles[j].x;
+            float y = obstacleList.obstacles[j].y;
+            float z = obstacleList.obstacles[j].z;
             Vector3 position = new Vector3(x, y, z);
 
-            float scale_x = obstacleList.obstacles[i].scale_x;
-            float scale_y = obstacleList.obstacles[i].scale_y;
-            float scale_z = obstacleList.obstacles[i].scale_z;
+            float scale_x = obstacleList.obstacles[j].scale_x;
+            float scale_y = obstacleList.obstacles[j].scale_y;
+            float scale_z = obstacleList.obstacles[j].scale_z;
             Vector3 scale = new Vector3(scale_x, scale_y, scale_z);
 
+            // Pull this out to a separate function
+            //  Instantiate or ObjectPool.Spawn
+            // ---
             GameObject obstacle = Instantiate(obstaclePrefab, position, Quaternion.identity) as GameObject;
             // parent to empty
             obstacle.transform.parent = obstaclesEmptyObject.transform;
 
             obstacle.transform.localScale = scale;
 
-            // instead of this we need uv maps.
-            //obstacle.renderer.material.SetTextureScale("_MainTex", new Vector2(scale.x, scale.y));
-            //obstacle.renderer.material.SetTextureScale("_BumpMap", new Vector2(scale.x, scale.y));
-
-            //obstacle.renderer.material.SetTextureScale("_MainTex", new Vector2(1, 1));
-            //obstacle.renderer.material.SetTextureScale("_BumpMap", new Vector2(1, 1));
-
-            // uv
-            // WOW. Printed out arrays of vertexes and uvs, then filled them in that order. WORKED. Almost. One polygon is mysteriously broken.
-            // The whole thing is fucking convoluted.
-            /*
             Vector2[] DoMeUVs =
             {
+                /* my try
                 // x, y
                 new Vector2(0, 0), new Vector2(1, 0), new Vector2(0, 1), new Vector2(1, 1),
                 new Vector2(0, 0), new Vector2(1, 1), new Vector2(0, 1), new Vector2(1, 1), 
@@ -140,55 +133,37 @@ public class XMLToLevel : MonoBehaviour
                 // y, z
                 new Vector2(0, 0), new Vector2(1, 1), new Vector2(1, 0), new Vector2(0, 1),
                 new Vector2(0, 0), new Vector2(1, 1), new Vector2(1, 0), new Vector2(0, 1)
+                */
+
+                /* Zody to the rescue
+                new Vector2(x, 0), new Vector2(0, 0), new Vector2(x, y), new Vector2(0, y),//
+                new Vector2(x, 0), new Vector2(0, 0), new Vector2(x, 0), new Vector2(0, 0), 
+                
+                // x, z
+                new Vector2(x, z), new Vector2(0, z), new Vector2(x, y), new Vector2(0, y),
+                new Vector2(x, 0), new Vector2(0, z), new Vector2(0, 0), new Vector2(x, z),//
+                
+                // z, y
+                new Vector2(z, 0), new Vector2(0, y), new Vector2(0, 0), new Vector2(z, y),//
+                new Vector2(0, 0), new Vector2(z, y), new Vector2(z, 0), new Vector2(0, y)//
+                */
+                // x, y
+                new Vector2(scale_x, 0), new Vector2(0, 0), new Vector2(scale_x, scale_y),  new Vector2(0, scale_y),//
+                new Vector2(scale_x, 0), new Vector2(0, 0), new Vector2(scale_x, 0),        new Vector2(0, 0),
+
+                // x, z
+                new Vector2(scale_x, scale_z),  new Vector2(0, scale_z), new Vector2(scale_x, scale_y), new Vector2(0, scale_y),
+                new Vector2(scale_x, 0),        new Vector2(0, scale_z), new Vector2(0, 0),             new Vector2(scale_x, scale_z),//
+                
+                // z, y
+                new Vector2(scale_z, 0),    new Vector2(0, scale_y),        new Vector2(0, 0),          new Vector2(scale_z, scale_y),//
+                new Vector2(0, 0),          new Vector2(scale_z, scale_y),  new Vector2(scale_z, 0),    new Vector2(0, scale_y)//
             };
 
             Mesh mesh = obstacle.GetComponent<MeshFilter>().mesh;
             mesh.uv = DoMeUVs;
-            */
+            // ---
         }
     }
 
-    /*
-     * z=1, back 
-        0   (1, 0,  )  (0, 0)       0   (1, 0,  ) (0, 0)
-        1   (0, 0,  )  (1, 0)       1   (0, 0,  ) (1, 0)
-        2   (1, 1,  )  (0, 1)       2   (1, 1,  ) (0, 1)
-        3   (0, 1,  )  (1, 1)       3   (0, 1,  ) (1, 1)
-       z=0, front                    
-        4   (1, 1,  )  (0, 1)       4   (1, 1,  ) (0, 1) 
-        5   (0, 1,  )  (1, 1)       5   (0, 1,  ) (1, 1) 
-        6   (1, 0,  )  (0, 1)       6   (1, 0,  ) (0, 1) 
-        7   (0, 0,  )  (1, 1)       7   (0, 0,  ) (1, 1) 
-       y=1, top                      
-        8   (1,  , 1)  (0, 0)       8   (1,  , 1) (0, 0) 
-        9   (0,  , 1)  (1, 0)       9   (0,  , 1) (1, 0) 
-        10  (1,  , 0)  (0, 0)       10  (1,  , 0) (0, 0) 
-        11  (0,  , 0)  (1, 0)       11  (0,  , 0) (1, 0) 
-       y=0, bottom                   
-        12  (1,  , 0)  (0, 0)       12  (1,  , 0) (0, 0) 
-        13  (0,  , 1)  (1, 1)       13  (0,  , 1) (1, 1) 
-        14  (0,  , 0)  (1, 0)       14  (0,  , 0) (1, 0) 
-        15  (1,  , 1)  (0, 1)       15  (1,  , 1) (0, 1) 
-       x=0, left                     
-        16  ( , 0, 1)  (0, 0)       16  ( , 0, 1) (0, 0) 
-        17  ( , 1, 0)  (1, 1)       17  ( , 1, 0) (1, 1) 
-        18  ( , 0, 0)  (1, 0)       18  ( , 0, 0) (1, 0) 
-        19  ( , 1, 1)  (0, 1)       19  ( , 1, 1) (0, 1) 
-       x=1, right       
-        20  ( , 0, 0)  (0, 0)       20  ( , 0, 0) (0, 0)
-        21  ( , 1, 1)  (1, 1)       21  ( , 1, 1) (1, 1)
-        22  ( , 0, 1)  (1, 0)       22  ( , 0, 1) (1, 0)
-        23  ( , 1, 0)  (0, 1)       23  ( , 1, 0) (0, 1)
-    */
-
-    /* DEFAULT  / works with 0 and 1
-                new Vector2(0, 0), new Vector2(4, 0), new Vector2(0, 7), new Vector2(4, 7),
-                new Vector2(0, 7), new Vector2(4, 7), new Vector2(0, 7), new Vector2(4, 7), 
-                // y = c
-                new Vector2(0, 0), new Vector2(1, 0), new Vector2(0, 0), new Vector2(1, 0),
-                new Vector2(0, 0), new Vector2(1, 1), new Vector2(1, 0), new Vector2(0, 1),
-                // x = c
-                new Vector2(0, 0), new Vector2(1, 1), new Vector2(1, 0), new Vector2(0, 1),
-                new Vector2(0, 0), new Vector2(1, 1), new Vector2(1, 0), new Vector2(0, 1)
-                */
 }

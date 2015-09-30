@@ -18,6 +18,7 @@ public class FruitManager : MonoBehaviour
 
     void Start()
     {
+        
         Snake = GameObject.FindWithTag("SnakeHead");
         SnakeScript = Snake.GetComponent<SnakeController>();
         
@@ -25,6 +26,7 @@ public class FruitManager : MonoBehaviour
         popupManagerScript = popupManager.GetComponent<PopupManager>();
 
         Show();
+        
 	}
 	
     // again, this is snake, so we don't need to check who's the one bumpin'.
@@ -40,13 +42,12 @@ public class FruitManager : MonoBehaviour
 
 	void Show()
     {
-        // Is all this stuff taken from LevelManager?        
-        // More hard-coded limits to remove
+        // Get level sizes from LevelManager
         int rX, rY, rZ;
         
-        rX = Random.Range(0, 19);
-        rY = Random.Range(0, 19);
-        rZ = Random.Range(0, 19);
+        rX = Random.Range(0, 10);
+        rY = Random.Range(0, 10);
+        rZ = Random.Range(0, 10);
 
         // Check for snake coords before spawning the fruit;
 
@@ -77,6 +78,7 @@ public class FruitManager : MonoBehaviour
         else
         {
             Debug.Log("Victory screen");
+            // call into popupmanager's LevelComplete function?
             popupManagerScript.Pause();
             // level select, start screen, exit game
         }

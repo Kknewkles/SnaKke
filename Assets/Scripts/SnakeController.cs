@@ -12,7 +12,7 @@ public class SnakeController : MonoBehaviour
     List<GameObject> Snake = new List<GameObject>();    // le snake.
 
     
-    public bool spawnTail = false;
+    [HideInInspector] public bool spawnTail = false;
     public int spawnCounter = 0;
 
     GameObject inputManagerObject;

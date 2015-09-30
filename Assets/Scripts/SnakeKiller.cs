@@ -14,6 +14,6 @@ public class SnakeKiller : MonoBehaviour
     
     void OnTriggerEnter(Collider other)
     {
-        popupManager.ShowDeathScreen();
+        popupManager.DeathScreen_Show();
     }
 }
