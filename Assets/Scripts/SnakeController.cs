@@ -4,10 +4,13 @@ using System.Collections.Generic;
 
 public class SnakeController : MonoBehaviour
 {
+    public static SnakeController instance;
+    
     // all the public vars that don't have to be accessed from another class, serialize them
     public bool alive = true;
 
-    GameObject SnakeHead;                               // le head.
+    // Is the head our instance? Or the primary 
+    public GameObject SnakeHead;                        // le head.
     public GameObject SnakeTail;                        // le tails.
     List<GameObject> Snake = new List<GameObject>();    // le snake.
 
@@ -17,7 +20,9 @@ public class SnakeController : MonoBehaviour
 
     GameObject inputManagerObject;
     InputManager inputManager;
-        
+
+    public Vector3 spawnPoint;
+
     public Vector3[] moveTo = new Vector3[10];     // array of next coords for tails; 10 max atm.
     
     // durations --- 
@@ -43,22 +48,19 @@ public class SnakeController : MonoBehaviour
     int[] saveControls = { 0, 0 };   // variable for storing non-zero input
     int[] applyInput = { 0, 0 };     // variable that applies to the snake
 
+    void Awake()
+    {
+        instance = this;
+    }
 
     void Start()
     {
-        // preparations ---
-        // get the head!
-        SnakeHead = GameObject.FindWithTag("SnakeHead");
+        Vector3 spawnPoint = new Vector3(5, 0, 5);
+                
+        // Spawn the head
+        SnakeHead = (GameObject)Instantiate(SnakeHead, spawnPoint, Quaternion.identity);
         Snake.Add(SnakeHead);
 
-        // get the input! ---
-        inputManagerObject = GameObject.FindWithTag("InputManager");
-        inputManager = inputManagerObject.GetComponent<InputManager>();
-
-        // spawn conditions
-        Vector3 spawnPoint = new Vector3(5, 0, 5);
-        SnakeHead.transform.position = spawnPoint;
-                        
         // launch ---
         StartCoroutine(SnakeCycle());
     }
@@ -66,7 +68,7 @@ public class SnakeController : MonoBehaviour
     void Update()
     {
         // always poll
-        inputManager.Check(controlCheck);
+        InputManager.instance.Check(controlCheck);
 
         // save if not zero
         if(controlCheck[0] != 0 || controlCheck[1] != 0)

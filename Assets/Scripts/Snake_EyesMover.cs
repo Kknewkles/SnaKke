@@ -5,11 +5,9 @@ public class Snake_EyesMover : MonoBehaviour
 {
     private GameObject SnakeHead;
     
-    void Start()
+    void Update()
     {
-        SnakeHead = GameObject.FindWithTag("SnakeHead");
-        transform.parent = SnakeHead.transform;
-
-        // coord correction?
+        transform.position = SnakeController.instance.SnakeHead.transform.position;
+        transform.rotation = SnakeController.instance.SnakeHead.transform.rotation;
     }
 }

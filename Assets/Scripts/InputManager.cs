@@ -3,6 +3,8 @@ using System.Collections;
 
 public class InputManager : MonoBehaviour
 {
+    public static InputManager instance;
+
     int Hor = 0;
     int Ver = 0;
     float rawHorAxis = 0;
@@ -39,5 +41,10 @@ public class InputManager : MonoBehaviour
         controls[0] = Hor;
         controls[1] = Ver;
         return controls;
+    }
+
+    void Awake()
+    {
+        instance = this;
     }
 }

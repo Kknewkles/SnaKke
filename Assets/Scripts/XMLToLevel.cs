@@ -31,9 +31,12 @@ public class XMLToLevel : MonoBehaviour
     public GameObject obstaclePrefab;
     GameObject obstaclesEmptyObject;
 
+    int levelNumber = 1;
+
     private static readonly string pathFolderName = Application.dataPath + "/Resources/";
-    private static readonly string pathObstaclesFile = "/Obstacles.xml";
-    private static readonly string pathWallsFile = "/Walls.xml";
+    private static readonly string pathObstaclesFile = "/Obstacles";
+    private static readonly string pathWallsFile = "/Walls";
+    private static readonly string fileExtention = ".xml";
 
     void Start()
     {
@@ -53,7 +56,7 @@ public class XMLToLevel : MonoBehaviour
     public void ReadWallsFromXML()
     {
         XmlSerializer deserializer = new XmlSerializer(typeof(ArrayOfWallData));
-        TextReader xmlReader = new StreamReader(pathFolderName + pathWallsFile);
+        TextReader xmlReader = new StreamReader(pathFolderName + pathWallsFile + levelNumber + fileExtention);
         wallList = (ArrayOfWallData)(deserializer.Deserialize(xmlReader));
         xmlReader.Close();
 
@@ -94,7 +97,7 @@ public class XMLToLevel : MonoBehaviour
     public void ReadObstaclesFromXML()
     {
         XmlSerializer deserializer = new XmlSerializer(typeof(ArrayOfObstacleData));
-        TextReader xmlReader = new StreamReader(pathFolderName + pathObstaclesFile);
+        TextReader xmlReader = new StreamReader(pathFolderName + pathObstaclesFile + levelNumber + fileExtention);
         obstacleList = (ArrayOfObstacleData)(deserializer.Deserialize(xmlReader));
         xmlReader.Close();
 

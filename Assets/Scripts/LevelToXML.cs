@@ -42,9 +42,12 @@ public class LevelToXML : MonoBehaviour
     WallData wall;
     List<WallData> walls = new List<WallData>();
 
+    int levelNumber = 1;
+
     private static readonly string pathFolderName = Application.dataPath + "/Resources/";
-    private static readonly string pathObstaclesFile = "/Obstacles.xml";
-    private static readonly string pathWallsFile = "/Walls.xml";
+    private static readonly string pathObstaclesFile = "/Obstacles";
+    private static readonly string pathWallsFile = "/Walls";
+    private static readonly string fileExtention = ".xml";
 
     int obstaclesCounter = -1;
     int wallsCounter = -1;
@@ -125,7 +128,7 @@ public class LevelToXML : MonoBehaviour
         nonamespaces.Add("", "");
         
         XmlWriterSettings xmlWriterSettings = new XmlWriterSettings { OmitXmlDeclaration = true, Indent = true };
-        XmlWriter xmlWriter = XmlWriter.Create(pathFolderName + pathObstaclesFile, xmlWriterSettings);
+        XmlWriter xmlWriter = XmlWriter.Create(pathFolderName + pathObstaclesFile + levelNumber + fileExtention, xmlWriterSettings);
         serializer.Serialize(xmlWriter, list, nonamespaces);
         xmlWriter.Close();
     }
@@ -137,7 +140,7 @@ public class LevelToXML : MonoBehaviour
         nonamespaces.Add("", "");
 
         XmlWriterSettings xmlWriterSettings = new XmlWriterSettings { OmitXmlDeclaration = true, Indent = true };
-        XmlWriter xmlWriter = XmlWriter.Create(pathFolderName + pathWallsFile, xmlWriterSettings);
+        XmlWriter xmlWriter = XmlWriter.Create(pathFolderName + pathWallsFile + levelNumber + fileExtention, xmlWriterSettings);
         serializer.Serialize(xmlWriter, list, nonamespaces);
         xmlWriter.Close();
     }

@@ -7,6 +7,8 @@ using UnityEditor;
 
 public class PopupManager : MonoBehaviour
 {
+    public static PopupManager instance;
+    
     public GameObject Curtain;          // Main menu; transitions - level change, retry
     public GameObject Resume_Button;    // Settings menu; active in-game.
     bool inGame = false;
@@ -19,6 +21,11 @@ public class PopupManager : MonoBehaviour
     public GameObject DeathScreen;      // 
 
     
+    void Awake()
+    {
+        instance = this;
+    }
+
     // set up variables
     // call the game init/reset
     void Start()
