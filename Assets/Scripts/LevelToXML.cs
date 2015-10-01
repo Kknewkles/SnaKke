@@ -32,6 +32,8 @@ public class WallData
 
 public class LevelToXML : MonoBehaviour
 {
+    public static LevelToXML instance;
+    
     GameObject obstaclesParent;
     Transform[] obstaclesTransforms;
     ObstacleData obstacle;
@@ -42,7 +44,7 @@ public class LevelToXML : MonoBehaviour
     WallData wall;
     List<WallData> walls = new List<WallData>();
 
-    int levelNumber = 1;
+    [HideInInspector] public int levelNumber;
 
     private static readonly string pathFolderName = Application.dataPath + "/Resources/";
     private static readonly string pathObstaclesFile = "/Obstacles";
@@ -54,30 +56,27 @@ public class LevelToXML : MonoBehaviour
         
     void Awake()
     {
-        obstaclesParent = GameObject.FindWithTag("Obstacles");
-        obstaclesCounter = -1;
-        //FindObstacles();
-
-        wallsParent = GameObject.FindWithTag("Walls");
-        wallsCounter = -1;
-        //FindWalls();
+        instance = this;
+        
     }
 
     public void FindObstacles()
     {
+        obstaclesParent = GameObject.FindWithTag("Obstacles");
+        obstaclesCounter = -1;
+        
         obstaclesTransforms = obstaclesParent.GetComponentsInChildren<Transform>();
         foreach(Transform transform in obstaclesTransforms)
         {
-            // rounding here isn't really needed, but if we don't want to spend time aligning everything, it's kind of helpful.
             if(obstaclesCounter > -1)
             {
                 obstacle = new ObstacleData();
-                obstacle.x       = (float)(Mathf.Round(transform.position.x));
-                obstacle.y       = (float)(Mathf.Round(transform.position.y));
-                obstacle.z       = (float)(Mathf.Round(transform.position.z));
-                obstacle.scale_x = (float)(Mathf.Round(transform.localScale.x));
-                obstacle.scale_y = (float)(Mathf.Round(transform.localScale.y));
-                obstacle.scale_z = (float)(Mathf.Round(transform.localScale.z));
+                obstacle.x       = transform.position.x;
+                obstacle.y       = transform.position.y;
+                obstacle.z       = transform.position.z;
+                obstacle.scale_x = transform.localScale.x;
+                obstacle.scale_y = transform.localScale.y;
+                obstacle.scale_z = transform.localScale.z;
 
                 obstacles.Add(obstacle);
             }
@@ -88,6 +87,9 @@ public class LevelToXML : MonoBehaviour
 
     public void FindWalls()
     {
+        wallsParent = GameObject.FindWithTag("Walls");
+        wallsCounter = -1;
+        
         wallsTransforms = wallsParent.GetComponentsInChildren<Transform>();
         Vector3 originShift = new Vector3(0, 0, 0);
         foreach(Transform transform in wallsTransforms)

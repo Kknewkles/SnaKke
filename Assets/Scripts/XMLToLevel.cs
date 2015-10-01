@@ -21,6 +21,8 @@ public class ArrayOfObstacleData
 
 public class XMLToLevel : MonoBehaviour
 {
+    public static XMLToLevel instance;
+    
     ArrayOfWallData wallList = new ArrayOfWallData();
     WallData wall = new WallData();
     public GameObject wallPrefab;
@@ -31,25 +33,32 @@ public class XMLToLevel : MonoBehaviour
     public GameObject obstaclePrefab;
     GameObject obstaclesEmptyObject;
 
-    int levelNumber = 1;
+    [HideInInspector] public int levelNumber;
 
     private static readonly string pathFolderName = Application.dataPath + "/Resources/";
     private static readonly string pathObstaclesFile = "/Obstacles";
     private static readonly string pathWallsFile = "/Walls";
     private static readonly string fileExtention = ".xml";
 
+    void Awake()
+    {
+        instance = this;
+    }
+
     void Start()
     {
         wallsEmptyObject = new GameObject("Walls");
+        wallsEmptyObject.tag = "Walls";
         wallsEmptyObject.transform.parent = transform;
         wallsEmptyObject.transform.position = new Vector3(-0.5f, -0.5f, -0.5f);
  
         obstaclesEmptyObject = new GameObject("Obstacles");
+        obstaclesEmptyObject.tag = "Obstacles";
         obstaclesEmptyObject.transform.parent = transform;
 
-        ReadWallsFromXML();
+        //ReadWallsFromXML();
 
-        ReadObstaclesFromXML();
+        //ReadObstaclesFromXML();
     }
 
     // deserialize: get a bunch of object info

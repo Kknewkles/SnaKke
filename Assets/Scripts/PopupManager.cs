@@ -17,7 +17,6 @@ public class PopupManager : MonoBehaviour
     public GameObject TitleScreen;
     public GameObject LevelSelect;
     public GameObject Settings;         // settings, called form start screen settings menu and options in game
-    public GameObject VictoryScreen;    // 
     public GameObject DeathScreen;      // 
 
     
@@ -99,7 +98,6 @@ public class PopupManager : MonoBehaviour
 
         LevelSelect.SetActive(false);
         Settings.SetActive(false);
-        VictoryScreen.SetActive(false);
         DeathScreen.SetActive(false);
     }
     // FUNCTIONS OF THE TITLE SCREEN
@@ -188,14 +186,7 @@ public class PopupManager : MonoBehaviour
 
     // \\ ========= =========
 
-
-    // // ========= VICTORY SCREEN =========
-    public void VictoryScreen_Show()
-    {
-        VictoryScreen.SetActive(true);
-        Time.timeScale = 0;
-    }
-    
+        
     // NEXT LEVEL
     // -> loadLevel(curr+1)
 

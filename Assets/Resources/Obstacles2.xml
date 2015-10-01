@@ -1,0 +1,12 @@
+﻿<ArrayOfObstacleData>
+  <ObstacleData x="8.5" y="1.5" z="19.5" scale_x="4" scale_y="2" scale_z="8" />
+  <ObstacleData x="7.5" y="3.5" z="41.5" scale_x="4" scale_y="6" scale_z="2" />
+  <ObstacleData x="12.5" y="5.5" z="34.5" scale_x="10" scale_y="2" scale_z="4" />
+  <ObstacleData x="18" y="8" z="24" scale_x="1" scale_y="1" scale_z="5" />
+  <ObstacleData x="0" y="0" z="0" scale_x="1" scale_y="1" scale_z="1" />
+  <ObstacleData x="3.5" y="5.5" z="14" scale_x="6" scale_y="6" scale_z="3" />
+  <ObstacleData x="14" y="2" z="6" scale_x="5" scale_y="3" scale_z="1" />
+  <ObstacleData x="8" y="5.5" z="28.5" scale_x="1" scale_y="4" scale_z="8" />
+  <ObstacleData x="16" y="8" z="8.5" scale_x="5" scale_y="1" scale_z="12" />
+  <ObstacleData x="3.5" y="5.5" z="35.5" scale_x="2" scale_y="6" scale_z="4" />
+</ArrayOfObstacleData>
