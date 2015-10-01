@@ -12,10 +12,10 @@ public class PopupManager : MonoBehaviour
     public GameObject Curtain;          // Main menu; transitions - level change, retry
     public GameObject Resume_Button;    // Settings menu; active in-game.
     bool inGame = false;
-    //int level = 1;
+    int level = 1;
 
     public GameObject TitleScreen;
-    public GameObject LevelSelect;
+    public GameObject LevelSelectScreen;
     public GameObject Settings;         // settings, called form start screen settings menu and options in game
     public GameObject DeathScreen;      // 
 
@@ -66,22 +66,25 @@ public class PopupManager : MonoBehaviour
 #endif
     }
     
+    public void Hide_Everything()   // except for curtain
+    {
+        TitleScreen.SetActive(false);
+        LevelSelectScreen.SetActive(false);
+        DeathScreen.SetActive(false);
+        Settings.SetActive(false);
+        Resume_Button.SetActive(false);
+    }
 
-    // ---
-    // default menu state.
-    // anything else?
-    public void Game_Reset()   // This is the only way you will see the Main Menu;
-                               //  the game's just been launched or we exited to it.
+    public void Game_Reset()
     {
         // fruits aren't being reset
 
         // player's posiiton too
-
+        //SnakeController.instance.Snake_Reset();
 
         inGame = false;
         Time.timeScale = 0;
-        // level = 1;
-                
+                        
         // replace these by show main menu?
         TitleScreen_Show();
     }
@@ -89,54 +92,39 @@ public class PopupManager : MonoBehaviour
 
     // ---
 
-    // // ========= MAIN MENU =========
-    // <SHOW MAIN MENU>
     public void TitleScreen_Show()
     {
+        Hide_Everything();
+        
         inGame = false;
 
         Curtain.SetActive(true);
         TitleScreen.SetActive(true);
-
-        LevelSelect.SetActive(false);
-        Settings.SetActive(false);
-        DeathScreen.SetActive(false);
     }
-    // FUNCTIONS OF THE TITLE SCREEN
-
-    // --- PLAY / LEVEL SELECT
-    // --- play -> load the only level (which is not done through XMLToLevel Start(), which is meh)
-    // level select -> level select menu
     
-    // stub for now
     public void LevelSelect_Show()
     {
-        // stub
-        TitleScreen.SetActive(false);
-        LevelSelect.SetActive(true);
+        Hide_Everything();
+
+        LevelSelectScreen.SetActive(true);
     }
 
-    // After loading/transforming a level
     public void Game_Start()
     {
-        // hide excess stuff
-        TitleScreen.SetActive(false);
-        LevelSelect.SetActive(false);
+        Hide_Everything();
         Curtain.SetActive(false);
 
-        inGame = true;
+        FruitManager.instance.Show();
 
-        // unpause
+        inGame = true;
         Time.timeScale = 1;
     }
     
-    // --- SETTINGS
-    // -> settings menu
     public void Settings_ShowFromTitle()
     {
+        Hide_Everything();
+
         inGame = false;
-        Resume_Button.SetActive(false);
-        TitleScreen.SetActive(false);
         Settings.SetActive(true);
     }
 
@@ -147,8 +135,6 @@ public class PopupManager : MonoBehaviour
     
 
     // // ========= SETTINGS =========
-    // --- aspect ratio drop down
-    // --- resolution drop down
     // --- music checkbox
     // --- sound effects checkbox
 
@@ -169,8 +155,9 @@ public class PopupManager : MonoBehaviour
     // ->
     public void Game_Resume()
     {
-        Settings.SetActive(false);
-        Pause();
+        Hide_Everything();
+        
+        Pause();    //?
     }
 
     // --- EXIT TO MAIN
@@ -186,28 +173,35 @@ public class PopupManager : MonoBehaviour
     // --- level 1
     public void LevelSelect_First()
     {
-        // this should smarter, but here or in the XMLToLevel?
-        //  Create on first, then OP transform on second time
-        XMLToLevel.instance.LoadLevel(1);
-        Game_Start();
+        level = 1;
+        Level_Select(level);
     }
 
     // --- level 2
     public void LevelSelect_Second()
     {
-        XMLToLevel.instance.LoadLevel(2);
-        Game_Start();
+        level = 2;
+        Level_Select(level);
     }
 
-    // -> loadLevel(i) -> XMLToLevel(path_i)
+    // use this to reset the current level on death->retry
+    public void Level_Select(int number)
+    {
+        foreach(Transform transform in XMLToLevel.instance.wallsEmptyObject.transform)
+            GameObject.Destroy(transform.gameObject);
+        foreach(Transform transform in XMLToLevel.instance.obstaclesEmptyObject.transform)
+            GameObject.Destroy(transform.gameObject);
 
-    // \\ ========= =========
+        for(int i = 1; i < SnakeController.instance.Snake.Count; i++)
+            Destroy(SnakeController.instance.Snake[i].gameObject);
 
+        SnakeController.instance.Snake.RemoveRange(1, SnakeController.instance.Snake.Count - 1);
+        
+        SnakeController.instance.Snake_Reset();
 
-    // EXIT TO MENU
-    // -> Game_Reset() 
-
-    // \\ ========= =========
+        XMLToLevel.instance.LoadLevel(number);
+        Game_Start();
+    }
 
     
     // // ========= DEATH SCREEN =========
@@ -218,6 +212,15 @@ public class PopupManager : MonoBehaviour
         Time.timeScale = 0;
     }
     
+    public void Death_Retry()
+    {
+        Hide_Everything();
+
+        Level_Select(level);
+        // null tails
+        // null fruitsEaten
+    }
+
     // --- RETRY
     // -> load level(current)
     // -> GameStart()? GameReset for now.

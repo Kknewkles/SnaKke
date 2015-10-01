@@ -12,14 +12,11 @@ public class SnakeController : MonoBehaviour
     // Is the head our instance? Or the primary 
     public GameObject SnakeHead;                        // le head.
     public GameObject SnakeTail;                        // le tails.
-    List<GameObject> Snake = new List<GameObject>();    // le snake.
+    public List<GameObject> Snake = new List<GameObject>();    // le snake.
 
     
     [HideInInspector] public bool spawnTail = false;
     public int spawnCounter = 0;
-
-    GameObject inputManagerObject;
-    InputManager inputManager;
 
     public Vector3 spawnPoint;
 
@@ -50,19 +47,33 @@ public class SnakeController : MonoBehaviour
 
     void Awake()
     {
-        instance = this;
+        instance = this;        
     }
 
     void Start()
     {
-        Vector3 spawnPoint = new Vector3(5, 0, 5);
-                
+        // launch ---
+        Snake_Spawn();
+
+        StartCoroutine(SnakeCycle());
+    }
+
+    public void Snake_Spawn()
+    {
+        spawnPoint = new Vector3(5, 0, 5);
+
         // Spawn the head
         SnakeHead = (GameObject)Instantiate(SnakeHead, spawnPoint, Quaternion.identity);
         Snake.Add(SnakeHead);
+    }
 
-        // launch ---
-        StartCoroutine(SnakeCycle());
+    public void Snake_Reset()
+    {
+        SnakeHead.transform.position = new Vector3(5, 0, 5);
+        SnakeHead.transform.rotation = Quaternion.Euler(0, 0, 0);
+        moveTo[0] = new Vector3(5, 0, 6);
+        
+        Time.timeScale = 1;
     }
 
     void Update()
@@ -229,15 +240,16 @@ public class SnakeController : MonoBehaviour
         Vector3 coords = Snake[Snake.Count - 1].transform.position - move;
 
         // if you take one of existing/from objectpool, how do you distinguish and refer between them?
+        /*
         SnakeTail = (GameObject)(Instantiate(SnakeTail, coords, Quaternion.identity));
         Snake.Add(SnakeTail);
+        */
+
+        Snake.Add((GameObject)(Instantiate(SnakeTail, coords, Quaternion.identity)));
 
         // with ObjectPool snake will have to track tails only up to snake's length,
         //  which will have to become _a separate variable_ from Snake.Count.
     }
     
-    // all this to dedicated OptionsManager
-    // ---
     
-    // ---
 }
