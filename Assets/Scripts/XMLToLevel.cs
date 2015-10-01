@@ -33,10 +33,10 @@ public class XMLToLevel : MonoBehaviour
     public GameObject obstaclePrefab;
     GameObject obstaclesEmptyObject;
 
-    [HideInInspector] public int levelNumber;
-    [HideInInspector] public int levelLength_x = 0;
-    [HideInInspector] public int levelLength_y = 0;
-    [HideInInspector] public int levelLength_z = 0;
+    public int levelNumber;
+    public int levelLength_x = 0;
+    public int levelLength_y = 0;
+    public int levelLength_z = 0;
 
     private static readonly string pathFolderName = Application.dataPath + "/Resources/";
     private static readonly string pathObstaclesFile = "/Obstacles";
@@ -108,10 +108,6 @@ public class XMLToLevel : MonoBehaviour
             // shift
             wall.transform.localPosition = position;
         }
-
-        levelLength_x = (int)wallList.walls[0].scale_x * 10;
-        levelLength_z = (int)wallList.walls[0].scale_z * 10;
-        levelLength_y = (int)wallList.walls[1].scale_x * 10;
     }
 
     public void ReadObstaclesFromXML()
