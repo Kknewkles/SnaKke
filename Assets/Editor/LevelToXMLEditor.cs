@@ -11,15 +11,15 @@ public class LevelToXMLEditor : Editor
 
         if(GUILayout.Button("Save level"))
         {
-            LevelToXML.instance.levelNumber = 2;
-            
-            LevelToXML.instance.FindWalls();
-            LevelToXML.instance.FindObstacles();
+            SaveLevel(LevelToXML.instance.levelNumber);
         }
     }
     public void SaveLevel(int number)
     {
+        LevelToXML.instance.levelNumber = number;
 
+        LevelToXML.instance.FindWalls();
+        LevelToXML.instance.FindObstacles();
     }
     
 }

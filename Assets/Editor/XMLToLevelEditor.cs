@@ -11,15 +11,15 @@ public class XMLToLevelEditor : Editor
 
         if(GUILayout.Button("Load level"))
         {
-            XMLToLevel.instance.levelNumber = 2;
-            
-            XMLToLevel.instance.ReadWallsFromXML();
-            XMLToLevel.instance.ReadObstaclesFromXML();
+            LoadLevel(XMLToLevel.instance.levelNumber);
         }
     }
 
     public void LoadLevel(int number)
     {
+        XMLToLevel.instance.levelNumber = number;
 
+        XMLToLevel.instance.ReadWallsFromXML();
+        XMLToLevel.instance.ReadObstaclesFromXML();
     }
 }

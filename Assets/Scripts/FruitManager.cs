@@ -8,7 +8,6 @@ public class FruitManager : MonoBehaviour
     
     private int fruitCount = 0;
     // Snake should know how much fruits there are and generate enough snake tails.
-    public int maxFruits = 10;
     
     void Start()
     {
@@ -60,17 +59,6 @@ public class FruitManager : MonoBehaviour
     {
         fruitCount++;
         Hide();
-        if (fruitCount < maxFruits)
-            Show();
-        else
-        {
-            Debug.Log("Victory screen");
-            
-            // call into popupmanager's LevelComplete function?
-            PopupManager.instance.Pause();
-            
-            // level select, start screen, exit game
-        }
-        
+        Show();
     }
 }

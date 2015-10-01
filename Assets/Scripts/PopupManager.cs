@@ -71,7 +71,7 @@ public class PopupManager : MonoBehaviour
     // default menu state.
     // anything else?
     public void Game_Reset()   // This is the only way you will see the Main Menu;
-                        //  the game's just been launched or we exited to it.
+                               //  the game's just been launched or we exited to it.
     {
         // fruits aren't being reset
 
@@ -93,6 +93,8 @@ public class PopupManager : MonoBehaviour
     // <SHOW MAIN MENU>
     public void TitleScreen_Show()
     {
+        inGame = false;
+
         Curtain.SetActive(true);
         TitleScreen.SetActive(true);
 
@@ -114,6 +116,7 @@ public class PopupManager : MonoBehaviour
         LevelSelect.SetActive(true);
     }
 
+    // After loading/transforming a level
     public void Game_Start()
     {
         // hide excess stuff
@@ -131,6 +134,7 @@ public class PopupManager : MonoBehaviour
     // -> settings menu
     public void Settings_ShowFromTitle()
     {
+        inGame = false;
         Resume_Button.SetActive(false);
         TitleScreen.SetActive(false);
         Settings.SetActive(true);
@@ -180,15 +184,25 @@ public class PopupManager : MonoBehaviour
 
     // // ========= LEVEL SELECT =========
     // --- level 1
+    public void LevelSelect_First()
+    {
+        // this should smarter, but here or in the XMLToLevel?
+        //  Create on first, then OP transform on second time
+        XMLToLevel.instance.LoadLevel(1);
+        Game_Start();
+    }
+
     // --- level 2
-    // --- level 3
+    public void LevelSelect_Second()
+    {
+        XMLToLevel.instance.LoadLevel(2);
+        Game_Start();
+    }
+
     // -> loadLevel(i) -> XMLToLevel(path_i)
 
     // \\ ========= =========
 
-        
-    // NEXT LEVEL
-    // -> loadLevel(curr+1)
 
     // EXIT TO MENU
     // -> Game_Reset() 
@@ -199,6 +213,7 @@ public class PopupManager : MonoBehaviour
     // // ========= DEATH SCREEN =========
     public void DeathScreen_Show()
     {
+        inGame = false;
         DeathScreen.SetActive(true);
         Time.timeScale = 0;
     }

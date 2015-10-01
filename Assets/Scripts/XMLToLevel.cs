@@ -33,7 +33,10 @@ public class XMLToLevel : MonoBehaviour
     public GameObject obstaclePrefab;
     GameObject obstaclesEmptyObject;
 
-    [HideInInspector] public int levelNumber;
+    public int levelNumber;
+    public int levelLength_x = 0;
+    public int levelLength_y = 0;
+    public int levelLength_z = 0;
 
     private static readonly string pathFolderName = Application.dataPath + "/Resources/";
     private static readonly string pathObstaclesFile = "/Obstacles";
@@ -55,10 +58,14 @@ public class XMLToLevel : MonoBehaviour
         obstaclesEmptyObject = new GameObject("Obstacles");
         obstaclesEmptyObject.tag = "Obstacles";
         obstaclesEmptyObject.transform.parent = transform;
+    }
 
-        //ReadWallsFromXML();
+    public void LoadLevel(int number)
+    {
+        XMLToLevel.instance.levelNumber = number;
 
-        //ReadObstaclesFromXML();
+        XMLToLevel.instance.ReadWallsFromXML();
+        XMLToLevel.instance.ReadObstaclesFromXML();
     }
 
     // deserialize: get a bunch of object info

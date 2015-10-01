@@ -44,7 +44,7 @@ public class LevelToXML : MonoBehaviour
     WallData wall;
     List<WallData> walls = new List<WallData>();
 
-    [HideInInspector] public int levelNumber;
+    public int levelNumber;
 
     private static readonly string pathFolderName = Application.dataPath + "/Resources/";
     private static readonly string pathObstaclesFile = "/Obstacles";
@@ -56,8 +56,15 @@ public class LevelToXML : MonoBehaviour
         
     void Awake()
     {
-        instance = this;
-        
+        instance = this;        
+    }
+
+    public void SaveLevel(int number)
+    {
+        LevelToXML.instance.levelNumber = number;
+
+        LevelToXML.instance.FindWalls();
+        LevelToXML.instance.FindObstacles();
     }
 
     public void FindObstacles()
@@ -105,15 +112,15 @@ public class LevelToXML : MonoBehaviour
             if(wallsCounter > -1)
             {
                 wall = new WallData();
-                wall.x       = (float)(Mathf.Round(transform.position.x - originShift.x));
-                wall.y       = (float)(Mathf.Round(transform.position.y - originShift.y));
-                wall.z       = (float)(Mathf.Round(transform.position.z - originShift.z));
-                wall.rot_x   = (float)(Mathf.Round(transform.rotation.eulerAngles.x));
-                wall.rot_y   = (float)(Mathf.Round(transform.rotation.eulerAngles.y));
-                wall.rot_z   = (float)(Mathf.Round(transform.rotation.eulerAngles.z));
-                wall.scale_x = (float)(Mathf.Round(transform.localScale.x));
-                wall.scale_y = (float)(Mathf.Round(transform.localScale.y));
-                wall.scale_z = (float)(Mathf.Round(transform.localScale.z));
+                wall.x       = transform.position.x - originShift.x;
+                wall.y       = transform.position.y - originShift.y;
+                wall.z       = transform.position.z - originShift.z;
+                wall.rot_x   = transform.rotation.eulerAngles.x;
+                wall.rot_y   = transform.rotation.eulerAngles.y;
+                wall.rot_z   = transform.rotation.eulerAngles.z;
+                wall.scale_x = transform.localScale.x;
+                wall.scale_y = transform.localScale.y;
+                wall.scale_z = transform.localScale.z;
 
                 walls.Add(wall);
             }

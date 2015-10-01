@@ -2,7 +2,7 @@
   <WallData x="10" y="0" z="15" rot_x="0" rot_y="0" rot_z="0" scale_x="2" scale_y="1" scale_z="3" />
   <WallData x="0" y="5" z="15" rot_x="0" rot_y="0" rot_z="270" scale_x="1" scale_y="1" scale_z="3" />
   <WallData x="10" y="5" z="30" rot_x="270" rot_y="0" rot_z="0" scale_x="2" scale_y="1" scale_z="1" />
-  <WallData x="10" y="10" z="15" rot_x="0" rot_y="0" rot_z="180" scale_x="2" scale_y="1" scale_z="3" />
-  <WallData x="20" y="5" z="15" rot_x="0" rot_y="0" rot_z="90" scale_x="1" scale_y="1" scale_z="3" />
+  <WallData x="10" y="10" z="15" rot_x="0" rot_y="0" rot_z="180.000015" scale_x="2" scale_y="1" scale_z="3" />
+  <WallData x="20" y="5" z="15" rot_x="0" rot_y="0" rot_z="90.00001" scale_x="1" scale_y="1" scale_z="3" />
   <WallData x="10" y="5" z="0" rot_x="90" rot_y="0" rot_z="0" scale_x="2" scale_y="1" scale_z="1" />
 </ArrayOfWallData>
