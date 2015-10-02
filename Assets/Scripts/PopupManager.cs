@@ -14,12 +14,16 @@ public class PopupManager : MonoBehaviour
     bool inGame = false;
     int level = 1;
 
+    public bool soundEffects = true;
+
     public GameObject TitleScreen;
     public GameObject LevelSelectScreen;
     public GameObject Settings;         // settings, called form start screen settings menu and options in game
     public GameObject DeathScreen;      // 
 
-    
+    public Text score;
+    public Text maxScore;
+
     void Awake()
     {
         instance = this;
@@ -135,8 +139,11 @@ public class PopupManager : MonoBehaviour
     
 
     // // ========= SETTINGS =========
-    // --- music checkbox
     // --- sound effects checkbox
+    public void ToggleSounds()
+    {
+        AudioListener.volume = AudioListener.volume == 1 ? 0 : 1;
+    }
 
     // --- FROM MENU - RESUME BUTTON : INACTIVE
     // -> Settings_ShowFromTitle()
@@ -207,6 +214,15 @@ public class PopupManager : MonoBehaviour
     // // ========= DEATH SCREEN =========
     public void DeathScreen_Show()
     {
+        if(FruitManager.instance.maximumHarvest < FruitManager.instance.fruitsEaten)
+            FruitManager.instance.maximumHarvest = FruitManager.instance.fruitsEaten;
+        
+        maxScore.text = "Maximum fruit harvest: " + FruitManager.instance.maximumHarvest;
+        
+        FruitManager.instance.fruitsEaten = 0;
+        score.text = "Score: " + FruitManager.instance.fruitsEaten;
+        
+        
         inGame = false;
         DeathScreen.SetActive(true);
         Time.timeScale = 0;

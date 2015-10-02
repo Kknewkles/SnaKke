@@ -13,14 +13,17 @@ public class SnakeController : MonoBehaviour
     public GameObject SnakeHead;                        // le head.
     public GameObject SnakeTail;                        // le tails.
     public List<GameObject> Snake = new List<GameObject>();    // le snake.
-
+    public GameObject FruitCompass;
     
     [HideInInspector] public bool spawnTail = false;
-    public int spawnCounter = 0;
+    [HideInInspector] public int spawnCounter = 0;
+    
+    [HideInInspector] public Vector3 tailSpawnCoord;
+    [HideInInspector] public Vector3 spawnPoint;
 
-    public Vector3 spawnPoint;
-
-    public Vector3[] moveTo = new Vector3[10];     // array of next coords for tails; 10 max atm.
+    // this should be a dynamic array.
+    // or at least a much bigger static one.
+    [HideInInspector] public Vector3[] moveTo = new Vector3[100];     // array of next coords for tails; 10 max atm.
     
     // durations --- 
     public float initialDelay = 1f; // delay after launch    
@@ -28,9 +31,9 @@ public class SnakeController : MonoBehaviour
     public float movDuration;
     float movElapsed = 0;
 
-    public float rotDuration = 2;    // change this into duration later
+    public float rotDuration = 2;
 
-    Vector3 forV;   // vector for the head to form next coords for the head?
+    [HideInInspector] public Vector3 forV;   // vector for the head to form next coords for the head?
                     // maybe I should assign rotation to head in the same place.
 
     bool isMoving = false;  // no input is applied during any kind of head motion
@@ -65,6 +68,7 @@ public class SnakeController : MonoBehaviour
         // Spawn the head
         SnakeHead = (GameObject)Instantiate(SnakeHead, spawnPoint, Quaternion.identity);
         Snake.Add(SnakeHead);
+        
     }
 
     public void Snake_Reset()
@@ -100,6 +104,7 @@ public class SnakeController : MonoBehaviour
             }
         }
 
+        //Debug.Log(AudioListener.volume);
     }
 
     // This is... eh. Probably ok.
@@ -232,24 +237,10 @@ public class SnakeController : MonoBehaviour
     // This will need to become a bit smarter for the ObjectPool.
     public void AddTail()
     {
-        // is it + or - move vector?...
-        // does the last tail shift by head's move or previous's move?
-        // maybe we could pass the forth vector with the call. Should be correct.
-
-        Vector3 move = Snake[0].transform.forward;
-        Vector3 coords = Snake[Snake.Count - 1].transform.position - move;
-
-        // if you take one of existing/from objectpool, how do you distinguish and refer between them?
-        /*
-        SnakeTail = (GameObject)(Instantiate(SnakeTail, coords, Quaternion.identity));
-        Snake.Add(SnakeTail);
-        */
-
-        Snake.Add((GameObject)(Instantiate(SnakeTail, coords, Quaternion.identity)));
-
-        // with ObjectPool snake will have to track tails only up to snake's length,
-        //  which will have to become _a separate variable_ from Snake.Count.
+        // the tail should move towards the previous coords of last tail;
+        // it should spawn at that coord - move of the last tail.
+        //moveTo[Snake.Count] = Snake[Snake.Count - 1].transform.position;
+        //Vector3 coords = moveTo[Snake.Count - 1];
+        Snake.Add((GameObject)(Instantiate(SnakeTail, tailSpawnCoord, Quaternion.identity)));
     }
-    
-    
 }

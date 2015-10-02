@@ -23,12 +23,12 @@ public class XMLToLevel : MonoBehaviour
 {
     public static XMLToLevel instance;
     
-    ArrayOfWallData wallList = new ArrayOfWallData();
+    public ArrayOfWallData wallList = new ArrayOfWallData();
     WallData wall = new WallData();
     public GameObject wallPrefab;
     public GameObject wallsEmptyObject;
 
-    ArrayOfObstacleData obstacleList = new ArrayOfObstacleData();
+    public ArrayOfObstacleData obstacleList = new ArrayOfObstacleData();
     ObstacleData obstacle = new ObstacleData();
     public GameObject obstaclePrefab;
     public GameObject obstaclesEmptyObject;
